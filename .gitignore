@@ -1,0 +1,9 @@
+# System and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Dependencies and local artifacts
+node_modules/
+coverage/
+dist/
