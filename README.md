@@ -1,23 +1,40 @@
 # Rua Livre
 
-Jogo de corrida arcade desenvolvido com HTML, CSS e JavaScript puro.
+Vertical slice de um jogo de corrida arcade pseudo-3D inspirado nos clássicos de 16 bits e ambientado em uma metrópole costeira brasileira fictícia.
 
-## Como executar
+## Executar
 
-Abra `index.html` em um navegador moderno. Para melhor experiência durante o desenvolvimento, use uma extensão de servidor local.
+O jogo usa módulos JavaScript nativos e deve ser servido por HTTP:
+
+```powershell
+node tools/dev-server.mjs
+```
+
+Depois, abra `http://127.0.0.1:4173`. Também é possível usar `npm.cmd run dev` no Windows.
 
 ## Controles
 
-- `Enter`: inicia ou reinicia a corrida.
-- `←` e `→`: move o carro.
-- `↑` e `↓`: acelera e freia.
+- `↑` ou `W`: acelerar
+- `↓` ou `S`: frear e iniciar derrapagem durante uma curva
+- `←` `→` ou `A` `D`: virar
+- `Espaço` ou `Shift`: nitro
+- `P` ou `Esc`: pausar
+
+## Objetivo
+
+Complete três voltas e termine entre os três primeiros. O prêmio da corrida pode ser usado para evoluir a Preparação do Falcão GT. Uma corrida sem colisões recebe bônus adicional.
+
+## Testes
+
+```powershell
+node --test
+```
+
+Os testes cobrem pista, física, largada, pausa, chegada, premiação e migração do save anterior.
 
 ## Estrutura
 
-```text
-css/style.css      Interface responsiva.
-js/                Módulos do jogo.
-assets/            Espaço para carros, cenário, interface e áudio.
-```
-
-O primeiro protótipo usa formas desenhadas no canvas. Os módulos já estão separados para receber sprites, pistas e regras de corrida nas próximas etapas.
+- `js/`: estado, pista, física, renderização, áudio, controles e persistência.
+- `css/style.css`: menus, garagem, HUD e adaptação de tela.
+- `assets/`: sprites e cenários originais usados pelo jogo.
+- `test/`: testes determinísticos com o executor nativo do Node.js.

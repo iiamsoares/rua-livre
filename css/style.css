@@ -1,0 +1,201 @@
+:root {
+  --ink: #05060b;
+  --panel: #0c101b;
+  --panel-soft: #12192a;
+  --line: #30395b;
+  --text: #f4f5ff;
+  --muted: #a8aec5;
+  --lime: #9cff45;
+  --yellow: #ffe052;
+  --orange: #ff672c;
+  --cyan: #4edcff;
+  --danger: #ff4e5d;
+  --paint: #d7dde5;
+}
+
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; }
+body {
+  overflow-x: hidden;
+  color: var(--text);
+  background: var(--ink);
+  font-family: "Arial Narrow", Impact, "Segoe UI", sans-serif;
+  font-stretch: condensed;
+}
+button { color: inherit; font: inherit; }
+button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
+.hidden { display: none !important; }
+.screen { display: none; min-height: calc(100vh - 76px); }
+.screen.active { display: block; }
+
+.topbar {
+  position: relative;
+  z-index: 20;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(18px, 4vw, 64px);
+  border-bottom: 2px solid #ffffff16;
+  background: #060810ee;
+  box-shadow: 0 8px 28px #0009;
+}
+.brand { border: 0; background: none; padding: 0; cursor: pointer; text-align: left; transform: skew(-8deg); }
+.brand-main { display: block; font-size: clamp(25px, 3vw, 38px); font-weight: 1000; font-style: italic; line-height: .86; letter-spacing: -.07em; }
+.brand-main i { color: var(--orange); }
+.brand-sub { display: block; margin: 8px 0 0 14px; color: #d9dcee; font: 700 8px/1 "Segoe UI", sans-serif; letter-spacing: .31em; }
+.profile { display: flex; align-items: center; gap: 10px; }
+.profile > span { min-width: 112px; padding: 8px 12px; border: 1px solid var(--line); background: #0b101bcc; color: var(--muted); font: 800 9px/1.2 "Segoe UI", sans-serif; letter-spacing: .13em; }
+.profile strong { display: block; margin-top: 3px; color: var(--yellow); font: 950 17px/1 "Arial Narrow", sans-serif; letter-spacing: 0; }
+.icon-button { min-height: 39px; border: 1px solid var(--line); background: #101727; padding: 0 12px; cursor: pointer; font-size: 10px; font-weight: 900; }
+
+.title-screen {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #080b17 url("../assets/scenery/rio-night-panorama.png") center/cover no-repeat;
+}
+.title-screen::after { content: ""; position: absolute; inset: auto 0 0; height: 34%; z-index: -1; background: linear-gradient(0deg, #05060b 10%, transparent); }
+.title-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, #05060bf2 0%, #05060bbb 35%, transparent 67%), linear-gradient(0deg, #08101c77, transparent 50%); }
+.title-content { width: min(690px, 86vw); padding: clamp(70px, 10vh, 120px) 0 72px clamp(24px, 7vw, 110px); position: relative; z-index: 2; }
+.eyebrow { margin: 0 0 13px; color: var(--lime); font: 900 11px/1.3 "Segoe UI", sans-serif; letter-spacing: .22em; }
+.title-content h1 { margin: 0; max-width: 670px; font-size: clamp(54px, 7.5vw, 112px); font-weight: 1000; font-style: italic; line-height: .82; letter-spacing: -.065em; text-transform: uppercase; text-shadow: 0 8px 0 #090b14, 0 16px 35px #000; }
+.title-content h1 em { color: var(--yellow); font-style: inherit; }
+.lead { max-width: 570px; margin: 28px 0 0; color: #e4e6f2; font: 600 clamp(14px, 1.4vw, 18px)/1.6 "Segoe UI", sans-serif; text-shadow: 0 2px 8px #000; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.primary, .secondary, .upgrade-button {
+  min-height: 49px;
+  border: 2px solid #ffffff28;
+  padding: 0 22px;
+  cursor: pointer;
+  font-weight: 1000;
+  font-style: italic;
+  letter-spacing: .045em;
+  transform: skew(-4deg);
+  transition: .16s ease;
+}
+.primary { border-color: #cfff73; color: #0b1406; background: linear-gradient(135deg, var(--lime), #d8ff67); box-shadow: 0 10px 28px #84ff3228; }
+.primary span { margin-left: 18px; font-size: 25px; }
+.secondary { background: #0a0f1ecc; }
+.primary:hover, .secondary:hover, .upgrade-button:hover:not(:disabled) { filter: brightness(1.15); transform: skew(-4deg) translateY(-2px); }
+.title-meta { display: flex; gap: 9px; margin-top: 38px; }
+.title-meta span { border-left: 3px solid var(--orange); padding: 7px 12px; background: #050811aa; font-size: 10px; letter-spacing: .1em; }
+.title-car { position: absolute; z-index: 1; width: min(53vw, 770px); right: -6vw; bottom: -5vw; filter: drop-shadow(0 28px 20px #000c); pointer-events: none; }
+
+.garage-screen { padding: 38px clamp(20px, 5vw, 76px) 64px; background: radial-gradient(circle at 35% 48%, #69391642, transparent 32%), linear-gradient(135deg, #11101a, #070a11 55%, #101a2a); }
+.section-heading { max-width: 1400px; margin: 0 auto 26px; display: flex; align-items: end; justify-content: space-between; gap: 20px; }
+.section-heading h2 { margin: 0; font-size: clamp(34px, 5vw, 66px); font-style: italic; letter-spacing: -.045em; text-transform: uppercase; }
+.garage-grid { width: min(1400px, 100%); min-height: 610px; margin: auto; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(380px, .55fr); border: 1px solid #39415a; background: #080b12d9; box-shadow: 0 28px 80px #000b; }
+.car-stage { position: relative; min-height: 570px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(180deg, #17111899, transparent 42%), repeating-linear-gradient(90deg, transparent 0 88px, #ffffff08 89px 90px), linear-gradient(0deg, #22170f, #0b0d13 45%); }
+.car-stage::before { content: ""; position: absolute; width: 74%; height: 22%; left: 13%; bottom: 13%; border: 3px solid #ffb43b; border-radius: 50%; background: #ff8b1b18; box-shadow: 0 0 30px #ff9c26, inset 0 0 30px #ff9c26; transform: perspective(400px) rotateX(65deg); }
+.garage-glow { position: absolute; inset: 0; background: linear-gradient(90deg, transparent, #ffb44417 20% 21%, transparent 22% 78%, #4dbdff17 79% 80%, transparent); }
+.car-stage img { position: relative; z-index: 2; width: min(92%, 780px); margin-top: 10px; filter: drop-shadow(0 28px 18px #000e) saturate(.92); }
+.car-name { position: absolute; z-index: 3; left: 28px; bottom: 26px; border-left: 4px solid var(--lime); padding: 8px 13px; background: #080b11c9; }
+.car-name strong { display: block; font-size: 29px; font-style: italic; }
+.car-name span { color: var(--muted); font: 700 9px/1 "Segoe UI", sans-serif; letter-spacing: .13em; }
+.tune-panel { border-left: 1px solid #39415a; padding: 28px; background: linear-gradient(180deg, #111827f0, #080b12f7); }
+.panel-kicker { margin: 0 0 12px; color: var(--muted); font-size: 11px; letter-spacing: .18em; }
+.paint-options { display: flex; gap: 11px; margin-bottom: 28px; }
+.paint-button { width: 40px; height: 40px; border: 3px solid #ffffff35; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 3px #0005; }
+.paint-button.selected { outline: 3px solid var(--lime); outline-offset: 3px; }
+.stat-list { display: grid; gap: 19px; padding: 24px 0; border-top: 1px solid #31394e; border-bottom: 1px solid #31394e; }
+.stat-list > div { display: grid; grid-template-columns: 92px 1fr 30px; align-items: center; gap: 10px; }
+.stat-list span { color: #c7cbda; font-size: 10px; letter-spacing: .07em; }
+.stat-list i { height: 10px; overflow: hidden; background: #252b3b; transform: skew(-8deg); }
+.stat-list i b { display: block; height: 100%; background: linear-gradient(90deg, var(--lime), var(--yellow)); }
+.stat-list strong { color: var(--lime); text-align: right; }
+.upgrade-card { display: grid; grid-template-columns: 1fr auto; gap: 18px; margin: 24px 0; padding: 18px; border: 1px solid #3a4359; background: #0d1320; }
+.upgrade-card small { color: var(--lime); font: 900 9px/1 "Segoe UI", sans-serif; letter-spacing: .15em; }
+.upgrade-card div > strong { display: block; margin-top: 5px; font-size: 22px; font-style: italic; }
+.upgrade-card p { margin: 8px 0 0; color: var(--muted); font: 500 11px/1.45 "Segoe UI", sans-serif; }
+.upgrade-button { min-width: 104px; border-color: #5b6680; background: #182136; }
+.upgrade-button span, .upgrade-button small { display: block; }
+.upgrade-button span { color: var(--yellow); font-size: 15px; }
+.upgrade-button:disabled { opacity: .42; cursor: not-allowed; }
+.race-button { width: 100%; }
+.save-note { color: #788095; text-align: center; font: 500 10px/1.4 "Segoe UI", sans-serif; }
+
+.race-screen { padding: 18px 18px 35px; background: radial-gradient(circle at top, #20254d, #070910 65%); }
+.race-shell { position: relative; width: min(1280px, calc((100vh - 155px) * 16 / 9), 100%); margin: auto; overflow: hidden; border: 2px solid #3c4770; background: #060810; box-shadow: 0 24px 80px #000c; aspect-ratio: 16 / 9; }
+#gameCanvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.hud { position: absolute; inset: 14px 14px auto; display: flex; align-items: flex-start; gap: 8px; pointer-events: none; }
+.hud-box, .map-box { border: 2px solid #55608c; background: #080b19dc; box-shadow: 4px 4px 0 #03040a99; transform: skew(-3deg); }
+.hud-box { min-width: 92px; padding: 7px 12px; }
+.hud-box small { color: #d6d9e8; font-size: 9px; font-style: italic; letter-spacing: .12em; }
+.hud-box strong { display: block; color: var(--lime); font-size: clamp(20px, 3vw, 38px); font-style: italic; line-height: .95; }
+.hud-box strong em { color: #e7eaf4; font-size: .55em; }
+.hud-box.center { position: absolute; left: 50%; min-width: 165px; text-align: center; transform: translateX(-50%) skew(-3deg); }
+.hud-box.center strong { color: var(--yellow); font-size: clamp(18px, 2.3vw, 29px); }
+.hud-box.lap { margin-left: auto; }
+.hud-box.lap strong { color: #f5f6ff; }
+.map-box { width: 108px; height: 68px; display: grid; place-items: center; }
+.map-box canvas { width: 92px; height: 58px; }
+.speedometer { position: absolute; left: 18px; bottom: 17px; width: 142px; height: 81px; padding: 12px 16px; clip-path: polygon(0 0, 86% 0, 100% 30%, 88% 100%, 0 100%); background: #07101eea; border-left: 4px solid var(--orange); }
+.speedometer small { color: var(--cyan); font-size: 9px; letter-spacing: .13em; }
+.speedometer strong { display: block; font-size: clamp(36px, 5vw, 59px); font-style: italic; line-height: .82; }
+.speedometer span { position: absolute; right: 23px; bottom: 11px; color: var(--yellow); font-size: 17px; }
+.nitro-hud, .health-hud { position: absolute; right: 22px; bottom: 24px; width: min(31%, 290px); padding: 8px 12px; border: 2px solid #4c5676; background: #080c19df; transform: skew(-5deg); }
+.health-hud { bottom: 65px; width: min(22%, 205px); }
+.nitro-hud span, .health-hud span { font-size: 9px; font-weight: 900; letter-spacing: .1em; }
+.nitro-hud i, .health-hud i { display: block; height: 10px; margin-top: 4px; overflow: hidden; background: #1b2435; }
+.nitro-hud b, .health-hud b { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, var(--orange), var(--yellow)); transition: width .1s; }
+.health-hud b { background: linear-gradient(90deg, var(--danger), var(--lime)); }
+.race-message { position: absolute; left: 50%; top: 31%; transform: translate(-50%, -50%) skew(-8deg); color: #fff; font-size: clamp(60px, 11vw, 140px); font-weight: 1000; font-style: italic; text-shadow: 6px 6px 0 #12152a, 10px 10px 0 var(--orange), 0 0 35px #000; opacity: 0; pointer-events: none; transition: opacity .12s; }
+.race-message.show { opacity: 1; }
+.pause-button { position: absolute; right: 17px; top: 92px; width: 35px; height: 35px; border: 2px solid #5e688b; color: white; background: #080c18cc; cursor: pointer; }
+.controls-strip { width: min(1280px, 100%); margin: 10px auto 0; display: flex; justify-content: center; gap: 25px; color: #7f879f; font: 700 9px/1 "Segoe UI", sans-serif; letter-spacing: .09em; }
+
+.overlay { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: #02040bdc; backdrop-filter: blur(5px); }
+.dialog { width: min(420px, 88%); padding: 28px; border: 2px solid #4e5879; background: linear-gradient(150deg, #161d30, #080b13); text-align: center; box-shadow: 14px 14px 0 #0007; }
+.dialog h2 { margin: 6px 0 24px; font-size: 37px; font-style: italic; text-transform: uppercase; }
+.dialog > button { width: 100%; margin-top: 9px; }
+.result-position { margin: -6px auto 18px; }
+.result-position strong { display: block; color: var(--lime); font-size: 76px; font-style: italic; line-height: .9; }
+.result-position span { color: var(--muted); font-size: 9px; letter-spacing: .18em; }
+.result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
+.result-grid span { padding: 9px 4px; border: 1px solid #353e57; color: var(--muted); font-size: 8px; letter-spacing: .1em; }
+.result-grid strong { display: block; margin-top: 4px; color: var(--yellow); font-size: 13px; letter-spacing: 0; }
+
+.how-dialog { position: relative; width: min(650px, 90vw); border: 2px solid #4c5677; color: var(--text); background: linear-gradient(145deg, #171e31, #090c14); padding: 34px; box-shadow: 0 30px 90px #000; }
+.how-dialog::backdrop { background: #03050bd9; backdrop-filter: blur(4px); }
+.how-dialog h2 { margin: 0 0 22px; font-size: 36px; font-style: italic; text-transform: uppercase; }
+.how-dialog > p:last-of-type { color: var(--muted); font: 500 13px/1.55 "Segoe UI", sans-serif; }
+.dialog-close { position: absolute; top: 13px; right: 13px; border: 0; color: white; background: none; font-size: 29px; cursor: pointer; }
+.how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.how-grid div { padding: 15px; border: 1px solid #343e59; background: #0b101c; }
+kbd { display: inline-grid; min-width: 31px; height: 29px; margin-right: 4px; place-items: center; border: 1px solid #64708e; border-bottom-width: 3px; background: #1b2335; font-size: 11px; }
+.how-grid strong { display: block; margin-top: 9px; color: var(--lime); font-size: 10px; letter-spacing: .1em; }
+.danger-link { border: 0; color: #ff8d98; background: none; padding: 8px 0; cursor: pointer; font-size: 10px; letter-spacing: .1em; }
+
+@media (max-width: 900px) {
+  .profile > span:nth-child(2) { display: none; }
+  .title-content { padding-left: 34px; }
+  .title-car { opacity: .65; width: 70vw; }
+  .garage-grid { grid-template-columns: 1fr; }
+  .car-stage { min-height: 390px; }
+  .tune-panel { border-left: 0; border-top: 1px solid #39415a; }
+  .garage-screen { padding-inline: 18px; }
+  .controls-strip { display: none; }
+  .race-screen { padding-inline: 0; }
+}
+
+@media (max-width: 620px) {
+  .topbar { height: 64px; padding-inline: 12px; }
+  .screen { min-height: calc(100vh - 64px); }
+  .profile > span { min-width: 93px; }
+  .profile .icon-button { display: none; }
+  .title-content { padding: 72px 22px; }
+  .title-car { width: 95vw; right: -30vw; opacity: .4; }
+  .title-meta { flex-wrap: wrap; }
+  .section-heading { align-items: flex-start; }
+  .section-heading .secondary { min-height: 40px; padding-inline: 12px; }
+  .car-stage { min-height: 300px; }
+  .tune-panel { padding: 20px; }
+  .hud { inset: 6px 6px auto; gap: 4px; }
+  .hud-box { min-width: 58px; padding: 4px 6px; }
+  .map-box { display: none; }
+  .pause-button { top: 54px; right: 7px; }
+  .speedometer { left: 5px; bottom: 5px; transform: scale(.72); transform-origin: bottom left; }
+  .nitro-hud { right: 7px; bottom: 8px; }
+  .health-hud { display: none; }
+}
