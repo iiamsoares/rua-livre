@@ -3,7 +3,7 @@ export const VIEW = Object.freeze({ width: 480, height: 270, horizon: 105, roadB
 export const RACE_RULES = Object.freeze({
   laps: 3,
   fixedStep: 1 / 60,
-  visibleDistance: 680,
+  visibleDistance: 500,
   podiumSize: 3,
   opponents: 7,
 });

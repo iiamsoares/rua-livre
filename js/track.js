@@ -1,6 +1,6 @@
 import { mod } from "./config.js";
 
-const SEGMENT_LENGTH = 20;
+const SEGMENT_LENGTH = 14;
 const SECTION_DEFINITIONS = [
   { length: 12, curve: 0, decor: "city" },
   { length: 16, curve: 0.52, decor: "palms" },

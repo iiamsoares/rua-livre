@@ -42,7 +42,7 @@ export function createRace(save, track, seed = Date.now()) {
     spriteIndex: RIVAL_SPRITES[index],
     finishedAt: null,
   }));
-  const traffic = Array.from({ length: 8 }, (_, index) => makeTraffic(random, 260 + index * 105 + random() * 45));
+  const traffic = Array.from({ length: 5 }, (_, index) => makeTraffic(random, 280 + index * 145 + random() * 55));
   const pickups = [];
   for (let distance = 420, index = 0; distance < totalDistance; distance += 520, index += 1) {
     pickups.push({ distance, lane: [-0.62, 0, 0.62][index % 3], collected: false });
@@ -121,7 +121,7 @@ function collide(race, obstacle, damage, events) {
   const delta = obstacle.distance - player.distance;
   if (Math.abs(delta) > 4.8 || Math.abs(obstacle.lane - player.lateral) > 0.23) return;
   player.health = Math.max(0, player.health - damage);
-  player.speed *= 0.55;
+  player.speed *= 0.68;
   player.lateral += player.lateral <= obstacle.lane ? -0.13 : 0.13;
   player.collisions += 1;
   player.collisionCooldown = 0.72;

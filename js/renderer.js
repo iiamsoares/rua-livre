@@ -141,7 +141,8 @@ export class RaceRenderer {
         context.fill();
       }
 
-      if (index % 5 < 2) {
+      const laneStripe = Math.floor((race.player.distance + near.distance) / 18) % 4;
+      if (laneStripe < 2) {
         for (const lane of [-1 / 3, 1 / 3]) {
           context.beginPath();
           context.moveTo(far.center + lane * far.half, far.y);
@@ -272,7 +273,7 @@ export class RaceRenderer {
       const row = player.steerVisual < -0.45 ? 0 : player.steerVisual < -0.08 ? 1 : player.steerVisual > 0.45 ? 3 : 2;
       const column = player.boosting ? Math.floor(race.elapsed * 12) % 4 : 2;
       context.rotate((player.drifting ? -0.045 : 0) * Math.sign(player.steerVisual || 1));
-      context.drawImage(this.tintedCar, column * frameWidth, row * frameHeight, frameWidth, frameHeight, -68, -73, 136, 136);
+      context.drawImage(this.tintedCar, column * frameWidth, row * frameHeight, frameWidth, frameHeight, -52, -57, 104, 104);
     } else {
       context.fillStyle = this.paint; context.fillRect(-36, -35, 72, 57);
       context.fillStyle = "#111928"; context.fillRect(-24, -29, 48, 22);

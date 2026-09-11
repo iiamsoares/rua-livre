@@ -5,10 +5,10 @@ import { createRioTrack, curveAt, segmentAt } from "../js/track.js";
 
 const idle = { accelerate: false, brake: false, steer: 0, nitro: false };
 
-test("a pista possui 2,4 km e segmentos navegáveis em loop", () => {
+test("a pista possui 1,68 km e segmentos navegáveis em loop", () => {
   const track = createRioTrack();
   assert.equal(track.segments.length, 120);
-  assert.equal(track.length, 2400);
+  assert.equal(track.length, 1680);
   assert.equal(segmentAt(track, 0).index, segmentAt(track, track.length).index);
   assert.equal(typeof curveAt(track, 700), "number");
   assert.equal(track.mapPoints.length, track.segments.length);
