@@ -25,6 +25,7 @@ function makeTraffic(random, distance) {
     spriteIndex: TRAFFIC_SPRITES[Math.floor(random() * TRAFFIC_SPRITES.length)],
     kind: random() < 0.2 ? "van" : "car",
     hitTimer: 0,
+    playerContact: false,
   };
 }
 
@@ -40,6 +41,7 @@ export function createRace(save, track, seed = Date.now()) {
     speed: speed + random() * 2,
     color: RIVAL_COLORS[index],
     spriteIndex: RIVAL_SPRITES[index],
+    playerContact: false,
     finishedAt: null,
   }));
   const traffic = Array.from({ length: 5 }, (_, index) => makeTraffic(random, 280 + index * 145 + random() * 55));
@@ -117,11 +119,24 @@ function updateTraffic(race, dt) {
 
 function collide(race, obstacle, damage, events) {
   const player = race.player;
-  if (player.collisionCooldown > 0 || obstacle.hitTimer > 0) return;
   const delta = obstacle.distance - player.distance;
-  if (Math.abs(delta) > 4.8 || Math.abs(obstacle.lane - player.lateral) > 0.23) return;
+  const touching = delta > -1 && delta < 6.2 && Math.abs(obstacle.lane - player.lateral) < 0.25;
+  if (!touching) {
+    obstacle.playerContact = false;
+    return;
+  }
+
+  const firstContact = !obstacle.playerContact;
+  obstacle.playerContact = true;
+  const safeGap = 4.2;
+  if (delta < safeGap) {
+    player.distance = Math.max(0, obstacle.distance - safeGap);
+    player.speed = Math.min(player.speed, Math.max(0, obstacle.speed * 0.92));
+  }
+  if (!firstContact || player.collisionCooldown > 0) return;
+
   player.health = Math.max(0, player.health - damage);
-  player.speed *= 0.68;
+  player.speed *= 0.72;
   player.lateral += player.lateral <= obstacle.lane ? -0.13 : 0.13;
   player.collisions += 1;
   player.collisionCooldown = 0.72;

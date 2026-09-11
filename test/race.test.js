@@ -46,6 +46,27 @@ test("uma corrida pausada não altera o estado", () => {
   assert.equal(race.player.speed, 0);
 });
 
+test("o jogador não atravessa um veículo na mesma faixa", () => {
+  const race = createRace({ preparation: 1 }, createRioTrack(), 30);
+  race.countdown = 0;
+  race.player.distance = 35;
+  race.player.speed = 180;
+  const obstacle = race.traffic[0];
+  obstacle.distance = 42;
+  obstacle.speed = 65;
+  obstacle.lane = 0;
+  race.traffic.slice(1).forEach((vehicle, index) => { vehicle.distance = 500 + index * 80; vehicle.lane = 0.62; });
+  race.rivals.forEach((rival, index) => { rival.distance = 700 + index * 30; rival.lane = -0.62; });
+
+  for (let index = 0; index < 90; index += 1) updateRace(race, { ...idle, accelerate: true }, 1 / 60);
+  assert.ok(race.player.distance <= obstacle.distance - 4.19);
+  assert.equal(race.player.collisions, 1);
+
+  race.player.lateral = 0.62;
+  for (let index = 0; index < 180; index += 1) updateRace(race, { ...idle, accelerate: true }, 1 / 60);
+  assert.ok(race.player.distance > obstacle.distance);
+});
+
 test("chegar atrás de dois rivais concede terceiro lugar e bônus limpo", () => {
   const race = createRace({ preparation: 1 }, createRioTrack(), 12);
   race.countdown = 0;

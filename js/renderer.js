@@ -2,6 +2,21 @@ import { RACE_RULES, VIEW, clamp, mod } from "./config.js";
 import { curveAt, segmentAt } from "./track.js";
 
 const ROAD_STEPS = 44;
+const NPC_GRID = Object.freeze({
+  columns: [0, 308, 629, 944, 1254],
+  rows: [0, 368, 652, 930, 1254],
+});
+
+function spriteCell(sheet, index, grid = null) {
+  const column = index % 4;
+  const row = Math.floor(index / 4);
+  const x0 = grid ? grid.columns[column] : Math.round(column * sheet.width / 4);
+  const x1 = grid ? grid.columns[column + 1] : Math.round((column + 1) * sheet.width / 4);
+  const y0 = grid ? grid.rows[row] : Math.round(row * sheet.height / 4);
+  const y1 = grid ? grid.rows[row + 1] : Math.round((row + 1) * sheet.height / 4);
+  const inset = 2;
+  return { x: x0 + inset, y: y0 + inset, width: x1 - x0 - inset * 2, height: y1 - y0 - inset * 2 };
+}
 
 function loadImage(source) {
   return new Promise((resolve) => {
@@ -216,14 +231,11 @@ export class RaceRenderer {
     const context = this.context;
     if (this.assets.npcCars && Number.isInteger(entity.spriteIndex)) {
       const sheet = this.assets.npcCars;
-      const frameWidth = sheet.width / 4;
-      const frameHeight = sheet.height / 4;
-      const column = entity.spriteIndex % 4;
-      const row = Math.floor(entity.spriteIndex / 4);
-      const size = (entity.kind === "van" ? 64 : 58) * point.scale;
+      const frame = spriteCell(sheet, entity.spriteIndex, NPC_GRID);
+      const size = (entity.kind === "van" ? 70 : 64) * point.scale;
       context.save();
       context.translate(point.x, point.y);
-      context.drawImage(sheet, column * frameWidth, row * frameHeight, frameWidth, frameHeight, -size / 2, -size * 0.88, size, size);
+      context.drawImage(sheet, frame.x, frame.y, frame.width, frame.height, -size / 2, -size * 0.88, size, size);
       context.restore();
       return;
     }
@@ -244,8 +256,10 @@ export class RaceRenderer {
     for (const entity of race.rivals) visible.push({ entity, rival: true, delta: entity.distance - race.player.distance });
     visible.sort((a, b) => b.delta - a.delta);
     for (const item of visible) {
-      if (item.delta < 5 || item.delta > RACE_RULES.visibleDistance) continue;
-      this.drawWorldCar(this.project(road, item.delta, item.entity.lane), item.entity, item.rival);
+      if (item.delta < -1 || item.delta > RACE_RULES.visibleDistance) continue;
+      const point = this.project(road, Math.max(0, item.delta), item.entity.lane);
+      point.y = Math.min(point.y, 263);
+      this.drawWorldCar(point, item.entity, item.rival);
     }
     for (const pickup of race.pickups) {
       const delta = pickup.distance - race.player.distance;
@@ -262,18 +276,17 @@ export class RaceRenderer {
     const player = race.player;
     context.save();
     const shake = race.impactTimer > 0 ? (Math.random() - 0.5) * 5 : 0;
-    context.translate(VIEW.width / 2 + shake, 233 + shake);
+    context.translate(VIEW.width / 2 + shake, 267 + shake);
     if (player.boosting) {
       context.fillStyle = "#ff6b21"; context.beginPath(); context.moveTo(-8, 8); context.lineTo(0, 39 + Math.random() * 9); context.lineTo(8, 8); context.fill();
       context.fillStyle = "#fff5a3"; context.beginPath(); context.moveTo(-3, 9); context.lineTo(0, 28 + Math.random() * 5); context.lineTo(3, 9); context.fill();
     }
     if (this.assets.playerSprite) {
-      const frameWidth = this.tintedCar.width / 4;
-      const frameHeight = this.tintedCar.height / 4;
       const row = player.steerVisual < -0.45 ? 0 : player.steerVisual < -0.08 ? 1 : player.steerVisual > 0.45 ? 3 : 2;
       const column = player.boosting ? Math.floor(race.elapsed * 12) % 4 : 2;
+      const frame = spriteCell(this.tintedCar, row * 4 + column);
       context.rotate((player.drifting ? -0.045 : 0) * Math.sign(player.steerVisual || 1));
-      context.drawImage(this.tintedCar, column * frameWidth, row * frameHeight, frameWidth, frameHeight, -52, -57, 104, 104);
+      context.drawImage(this.tintedCar, frame.x, frame.y, frame.width, frame.height, -32, -64, 64, 64);
     } else {
       context.fillStyle = this.paint; context.fillRect(-36, -35, 72, 57);
       context.fillStyle = "#111928"; context.fillRect(-24, -29, 48, 22);
