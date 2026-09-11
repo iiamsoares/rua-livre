@@ -1,4 +1,4 @@
-import { PAINTS, RACE_RULES, UPGRADE_COSTS, formatMoney, formatTime } from "./config.js";
+import { PLAYER_CARS, RACE_RULES, UPGRADE_COSTS, formatMoney, formatTime } from "./config.js";
 import { GameAudio } from "./audio.js";
 import { InputController } from "./input.js";
 import { RaceRenderer, loadGameAssets } from "./renderer.js";
@@ -21,7 +21,7 @@ const track = createRioTrack();
 const audio = new GameAudio(save.audio);
 const assets = await loadGameAssets();
 const renderer = new RaceRenderer(element("#gameCanvas"), element("#mapCanvas"), assets);
-renderer.setPaint(save.paint);
+renderer.setPlayerCar(save.carId);
 
 function showScreen(name) {
   activeScreen = name;
@@ -40,22 +40,31 @@ function updateProfile() {
   element("#soundButton").textContent = save.audio ? "SOM ON" : "SOM OFF";
 }
 
-function renderPaints() {
-  const container = element("#paintOptions");
+function selectedCar() {
+  return PLAYER_CARS.find((car) => car.id === save.carId) || PLAYER_CARS[0];
+}
+
+function renderCars() {
+  const container = element("#carOptions");
   container.replaceChildren();
-  for (const paint of PAINTS) {
+  for (const car of PLAYER_CARS) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `paint-button${paint.value === save.paint ? " selected" : ""}`;
-    button.style.background = paint.value;
-    button.title = paint.name;
-    button.setAttribute("aria-label", paint.name);
-    button.setAttribute("aria-pressed", paint.value === save.paint ? "true" : "false");
+    button.className = `car-button${car.id === save.carId ? " selected" : ""}`;
+    button.title = `Escolher ${car.name}`;
+    button.setAttribute("aria-label", `Escolher ${car.name}`);
+    button.setAttribute("aria-pressed", car.id === save.carId ? "true" : "false");
+    const image = document.createElement("img");
+    image.src = car.frontAsset;
+    image.alt = "";
+    const label = document.createElement("span");
+    label.textContent = car.name;
+    button.append(image, label);
     button.addEventListener("click", () => {
-      save.paint = paint.value;
+      save.carId = car.id;
       save = writeSave(save);
-      renderer.setPaint(save.paint);
-      renderPaints();
+      renderer.setPlayerCar(save.carId);
+      renderCars();
       updateGarageCar();
     });
     container.append(button);
@@ -63,10 +72,16 @@ function renderPaints() {
 }
 
 function updateGarageCar() {
-  document.documentElement.style.setProperty("--paint", save.paint);
-  element("#garageCar").style.filter = `drop-shadow(0 28px 18px #000e) drop-shadow(0 0 18px ${save.paint}55)`;
+  const car = selectedCar();
+  const garageCar = element("#garageCar");
+  garageCar.src = car.frontAsset;
+  garageCar.alt = `${car.name} visto de frente`;
+  element("#garageHeading").textContent = `Prepare o ${car.name}`;
+  element("#carName").textContent = car.name;
+  element("#carDescription").textContent = car.description;
   const titleCar = element(".title-car");
-  titleCar.style.filter = `drop-shadow(0 28px 20px #000c) drop-shadow(0 0 16px ${save.paint}44)`;
+  titleCar.src = car.frontAsset;
+  titleCar.alt = `${car.name}, o carro do jogador`;
 }
 
 function updateGarage() {
@@ -81,7 +96,8 @@ function updateGarage() {
   button.disabled = maxed;
   element("#upgradeCost").textContent = maxed ? "MÁXIMO" : formatMoney(UPGRADE_COSTS[save.preparation]);
   button.querySelector("small").textContent = maxed ? "INSTALADO" : "INSTALAR";
-  renderPaints();
+  renderer.setPlayerCar(save.carId);
+  renderCars();
   updateGarageCar();
   updateProfile();
 }
@@ -100,7 +116,7 @@ function startRace() {
   race = createRace(save, track, Math.floor(performance.now() * 1000));
   resultStored = false;
   accumulator = 0;
-  renderer.setPaint(save.paint);
+  renderer.setPlayerCar(save.carId);
   element("#pauseOverlay").classList.add("hidden");
   element("#resultOverlay").classList.add("hidden");
   showScreen("race");
@@ -197,7 +213,7 @@ element("#resetSaveButton").addEventListener("click", () => {
   if (!confirm("Apagar créditos, preparação e recordes do Rua Livre?")) return;
   save = clearSave();
   audio.setEnabled(save.audio);
-  renderer.setPaint(save.paint);
+  renderer.setPlayerCar(save.carId);
   howDialog.close();
   updateGarage();
 });

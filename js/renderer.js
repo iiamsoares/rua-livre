@@ -1,4 +1,4 @@
-import { RACE_RULES, VIEW, clamp, mod } from "./config.js";
+import { PLAYER_CARS, RACE_RULES, VIEW, clamp, mod } from "./config.js";
 import { curveAt, segmentAt } from "./track.js";
 
 const ROAD_STEPS = 44;
@@ -11,13 +11,13 @@ const INDICATOR_CROPS = Object.freeze({
   player: { x: 330, y: 285, width: 590, height: 920 },
 });
 
-function spriteCell(sheet, index, grid = null) {
+function spriteCell(sheet, index, grid = null, rows = 4) {
   const column = index % 4;
   const row = Math.floor(index / 4);
   const x0 = grid ? grid.columns[column] : Math.round(column * sheet.width / 4);
   const x1 = grid ? grid.columns[column + 1] : Math.round((column + 1) * sheet.width / 4);
-  const y0 = grid ? grid.rows[row] : Math.round(row * sheet.height / 4);
-  const y1 = grid ? grid.rows[row + 1] : Math.round((row + 1) * sheet.height / 4);
+  const y0 = grid ? grid.rows[row] : Math.round(row * sheet.height / rows);
+  const y1 = grid ? grid.rows[row + 1] : Math.round((row + 1) * sheet.height / rows);
   const inset = 2;
   return { x: x0 + inset, y: y0 + inset, width: x1 - x0 - inset * 2, height: y1 - y0 - inset * 2 };
 }
@@ -32,14 +32,15 @@ function loadImage(source) {
 }
 
 export async function loadGameAssets() {
-  const [background, playerSprite, npcCars, rivalIndicator, playerIndicator] = await Promise.all([
+  const [background, npcCars, rivalIndicator, playerIndicator, ...playerSprites] = await Promise.all([
     loadImage("assets/scenery/rio-night-panorama.png"),
-    loadImage("assets/cars/player/spritesheet_up.png"),
     loadImage("assets/cars/player/npcs_carro.png"),
     loadImage("assets/ui/seta_inimigo.png"),
     loadImage("assets/ui/seta_jogador.png"),
+    ...PLAYER_CARS.map((car) => loadImage(car.spriteAsset)),
   ]);
-  return { background, playerSprite, npcCars, rivalIndicator, playerIndicator };
+  const playerCars = Object.fromEntries(PLAYER_CARS.map((car, index) => [car.id, playerSprites[index]]));
+  return { background, playerCars, npcCars, rivalIndicator, playerIndicator };
 }
 
 export class RaceRenderer {
@@ -49,29 +50,14 @@ export class RaceRenderer {
     this.mapCanvas = mapCanvas;
     this.mapContext = mapCanvas.getContext("2d");
     this.assets = assets;
-    this.paint = "#d7dde5";
-    this.tintedCar = document.createElement("canvas");
-    this.tintedCar.width = assets.playerSprite?.width || 1254;
-    this.tintedCar.height = assets.playerSprite?.height || 1254;
+    this.playerCar = PLAYER_CARS[0];
+    this.playerSprite = assets.playerCars[this.playerCar.id];
     this.context.imageSmoothingEnabled = false;
   }
 
-  setPaint(paint) {
-    this.paint = paint;
-    const image = this.assets.playerSprite;
-    const context = this.tintedCar.getContext("2d");
-    context.clearRect(0, 0, this.tintedCar.width, this.tintedCar.height);
-    if (!image) return;
-    context.imageSmoothingEnabled = false;
-    context.drawImage(image, 0, 0, this.tintedCar.width, this.tintedCar.height);
-    context.globalCompositeOperation = "source-atop";
-    context.globalAlpha = 0.3;
-    context.fillStyle = paint;
-    context.fillRect(0, 0, this.tintedCar.width, this.tintedCar.height);
-    context.globalCompositeOperation = "source-over";
-    context.globalAlpha = 0.62;
-    context.drawImage(image, 0, 0, this.tintedCar.width, this.tintedCar.height);
-    context.globalAlpha = 1;
+  setPlayerCar(carId) {
+    this.playerCar = PLAYER_CARS.find((car) => car.id === carId) || PLAYER_CARS[0];
+    this.playerSprite = this.assets.playerCars[this.playerCar.id] || this.assets.playerCars[PLAYER_CARS[0].id];
   }
 
   makeRoad(race) {
@@ -299,14 +285,16 @@ export class RaceRenderer {
       context.fillStyle = "#ff6b21"; context.beginPath(); context.moveTo(-8, 8); context.lineTo(0, 39 + Math.random() * 9); context.lineTo(8, 8); context.fill();
       context.fillStyle = "#fff5a3"; context.beginPath(); context.moveTo(-3, 9); context.lineTo(0, 28 + Math.random() * 5); context.lineTo(3, 9); context.fill();
     }
-    if (this.assets.playerSprite) {
-      const row = player.steerVisual < -0.45 ? 0 : player.steerVisual < -0.08 ? 1 : player.steerVisual > 0.45 ? 3 : 2;
+    if (this.playerSprite) {
+      const row = this.playerCar.spriteRows === 3
+        ? (player.steerVisual < -0.12 ? 0 : player.steerVisual > 0.12 ? 2 : 1)
+        : (player.steerVisual < -0.45 ? 0 : player.steerVisual < -0.08 ? 1 : player.steerVisual > 0.45 ? 3 : 2);
       const column = player.boosting ? Math.floor(race.elapsed * 12) % 4 : 2;
-      const frame = spriteCell(this.tintedCar, row * 4 + column);
+      const frame = spriteCell(this.playerSprite, row * 4 + column, null, this.playerCar.spriteRows);
       context.rotate((player.drifting ? -0.045 : 0) * Math.sign(player.steerVisual || 1));
-      context.drawImage(this.tintedCar, frame.x, frame.y, frame.width, frame.height, -32, -64, 64, 64);
+      context.drawImage(this.playerSprite, frame.x, frame.y, frame.width, frame.height, -32, -64, 64, 64);
     } else {
-      context.fillStyle = this.paint; context.fillRect(-36, -35, 72, 57);
+      context.fillStyle = "#d7dde5"; context.fillRect(-36, -35, 72, 57);
       context.fillStyle = "#111928"; context.fillRect(-24, -29, 48, 22);
       context.fillStyle = "#ff3d49"; context.fillRect(-28, 8, 14, 7); context.fillRect(14, 8, 14, 7);
     }

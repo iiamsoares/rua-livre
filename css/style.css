@@ -10,7 +10,6 @@
   --orange: #ff672c;
   --cyan: #4edcff;
   --danger: #ff4e5d;
-  --paint: #d7dde5;
 }
 
 * { box-sizing: border-box; }
@@ -95,9 +94,12 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
 .car-name span { color: var(--muted); font: 700 9px/1 "Segoe UI", sans-serif; letter-spacing: .13em; }
 .tune-panel { border-left: 1px solid #39415a; padding: 28px; background: linear-gradient(180deg, #111827f0, #080b12f7); }
 .panel-kicker { margin: 0 0 12px; color: var(--muted); font-size: 11px; letter-spacing: .18em; }
-.paint-options { display: flex; gap: 11px; margin-bottom: 28px; }
-.paint-button { width: 40px; height: 40px; border: 3px solid #ffffff35; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 3px #0005; }
-.paint-button.selected { outline: 3px solid var(--lime); outline-offset: 3px; }
+.car-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-bottom: 24px; }
+.car-button { min-width: 0; height: 92px; overflow: hidden; display: grid; grid-template-rows: 1fr auto; align-items: center; padding: 4px 5px 8px; border: 2px solid #39435c; color: #cbd2e2; background: #090d16; cursor: pointer; }
+.car-button img { width: 100%; height: 58px; object-fit: contain; transform: scale(1.28); image-rendering: pixelated; pointer-events: none; }
+.car-button span { position: relative; z-index: 1; overflow: hidden; font-size: 9px; font-weight: 900; letter-spacing: .04em; text-overflow: ellipsis; white-space: nowrap; }
+.car-button:hover { border-color: #7784a6; background: #111827; }
+.car-button.selected { border-color: var(--lime); color: var(--lime); background: #142015; box-shadow: inset 0 0 0 2px #9cff4520, 0 0 15px #9cff4526; }
 .stat-list { display: grid; gap: 19px; padding: 24px 0; border-top: 1px solid #31394e; border-bottom: 1px solid #31394e; }
 .stat-list > div { display: grid; grid-template-columns: 92px 1fr 30px; align-items: center; gap: 10px; }
 .stat-list span { color: #c7cbda; font-size: 10px; letter-spacing: .07em; }

@@ -9,7 +9,6 @@ export const RACE_RULES = Object.freeze({
 });
 
 export const CAR = Object.freeze({
-  name: "UP TSI",
   baseTopSpeed: 190,
   baseAcceleration: 52,
   brakePower: 102,
@@ -18,12 +17,10 @@ export const CAR = Object.freeze({
   nitroAcceleration: 62,
 });
 
-export const PAINTS = Object.freeze([
-  { name: "Prata Lunar", value: "#d7dde5" },
-  { name: "Vermelho Brasa", value: "#e83d45" },
-  { name: "Azul Atlântico", value: "#2587d9" },
-  { name: "Amarelo Canário", value: "#f3c92f" },
-  { name: "Verde Avenida", value: "#43b66b" },
+export const PLAYER_CARS = Object.freeze([
+  { id: "up", name: "UP TSI", description: "1.0 TURBO · TRAÇÃO DIANTEIRA", frontAsset: "assets/cars/player/up_frente.png", spriteAsset: "assets/cars/player/spritesheet_up.png", spriteRows: 4 },
+  { id: "chevette", name: "CHEVETTE", description: "CLÁSSICO NACIONAL · TRAÇÃO TRASEIRA", frontAsset: "assets/cars/player/chevette_frente.png", spriteAsset: "assets/cars/player/spritesheet_chevette.png", spriteRows: 3 },
+  { id: "vectra", name: "VECTRA GLS", description: "SEDÃ ESPORTIVO · TRAÇÃO DIANTEIRA", frontAsset: "assets/cars/player/vectra_frente.png", spriteAsset: "assets/cars/player/spritesheet_vectra.png", spriteRows: 3 },
 ]);
 
 export const UPGRADE_COSTS = Object.freeze([0, 500, 900]);
