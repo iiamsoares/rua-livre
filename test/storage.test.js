@@ -7,7 +7,7 @@ test("save inválido volta para limites seguros", () => {
   assert.equal(save.credits, 0);
   assert.equal(save.paint, defaultSave().paint);
   assert.equal(save.preparation, 3);
-  assert.equal(save.bestPosition, 8);
+  assert.equal(save.bestPosition, 4);
   assert.equal(save.bestTime, null);
   assert.equal(save.audio, false);
 });

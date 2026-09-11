@@ -1,10 +1,10 @@
 import { CAR, POSITION_REWARDS, RACE_RULES, clamp, createRandom } from "./config.js";
 import { curveAt } from "./track.js";
 
-const RIVAL_SPEEDS = [172, 168, 164, 160, 156, 152, 148];
-const RIVAL_COLORS = ["#ff4b4f", "#36a7ff", "#ffd43c", "#9c65ed", "#4ed48b", "#ff873b", "#e9edf6"];
+const RIVAL_SPEEDS = [172, 164, 156];
+const RIVAL_COLORS = ["#ff4b4f", "#36a7ff", "#ffd43c"];
 const TRAFFIC_COLORS = ["#e64950", "#268cd7", "#e7b82b", "#774fc4", "#43ad72", "#dedfe5"];
-const RIVAL_SPRITES = [1, 2, 3, 4, 6, 9, 14];
+const RIVAL_SPRITES = [1, 2, 4];
 const TRAFFIC_SPRITES = [5, 7, 8, 10, 11, 12, 13, 15];
 
 export function carStats(preparation = 1) {
@@ -63,7 +63,7 @@ export function createRace(save, track, seed = Date.now()) {
     finished: false,
     finishReason: null,
     won: false,
-    position: 8,
+    position: RACE_RULES.opponents + 1,
     lap: 1,
     previousLap: 1,
     reward: 0,
@@ -180,7 +180,7 @@ function finishRace(race, reason, events) {
   if (reason === "complete") {
     race.position = 1 + race.rivals.filter((rival) => rival.finishedAt !== null && rival.finishedAt < race.elapsed).length;
   } else {
-    race.position = 8;
+    race.position = RACE_RULES.opponents + 1;
   }
   race.won = reason === "complete" && race.position <= RACE_RULES.podiumSize;
   const prize = calculateReward(race.position, race.player.collisions, reason === "complete");

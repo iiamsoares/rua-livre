@@ -32,7 +32,9 @@ test("contagem regressiva bloqueia o movimento e emite a largada", () => {
 
 test("rivais e trânsito recebem modelos válidos da folha de NPCs", () => {
   const race = createRace({ preparation: 1 }, createRioTrack(), 22);
-  assert.equal(new Set(race.rivals.map((rival) => rival.spriteIndex)).size, 7);
+  assert.equal(race.rivals.length, 3);
+  assert.equal(race.position, 4);
+  assert.equal(new Set(race.rivals.map((rival) => rival.spriteIndex)).size, 3);
   assert.ok(race.rivals.every((rival) => rival.spriteIndex >= 0 && rival.spriteIndex < 16));
   assert.ok(race.traffic.every((vehicle) => vehicle.spriteIndex >= 0 && vehicle.spriteIndex < 16));
 });
@@ -89,5 +91,5 @@ test("chegar atrás de dois rivais concede terceiro lugar e bônus limpo", () =>
 test("premiação diferencia pódio, corrida limpa e abandono", () => {
   assert.deepEqual(calculateReward(1, 0), { base: 1000, clean: 250, total: 1250 });
   assert.deepEqual(calculateReward(4, 2), { base: 400, clean: 0, total: 400 });
-  assert.deepEqual(calculateReward(8, 0, false), { base: 100, clean: 0, total: 100 });
+  assert.deepEqual(calculateReward(4, 0, false), { base: 100, clean: 0, total: 100 });
 });

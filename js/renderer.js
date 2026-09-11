@@ -6,6 +6,10 @@ const NPC_GRID = Object.freeze({
   columns: [0, 308, 629, 944, 1254],
   rows: [0, 368, 652, 930, 1254],
 });
+const INDICATOR_CROPS = Object.freeze({
+  rival: { x: 400, y: 330, width: 460, height: 570 },
+  player: { x: 330, y: 285, width: 590, height: 920 },
+});
 
 function spriteCell(sheet, index, grid = null) {
   const column = index % 4;
@@ -28,12 +32,14 @@ function loadImage(source) {
 }
 
 export async function loadGameAssets() {
-  const [background, playerSprite, npcCars] = await Promise.all([
+  const [background, playerSprite, npcCars, rivalIndicator, playerIndicator] = await Promise.all([
     loadImage("assets/scenery/rio-night-panorama.png"),
     loadImage("assets/cars/player/spritesheet_up.png"),
     loadImage("assets/cars/player/npcs_carro.png"),
+    loadImage("assets/ui/seta_inimigo.png"),
+    loadImage("assets/ui/seta_jogador.png"),
   ]);
-  return { background, playerSprite, npcCars };
+  return { background, playerSprite, npcCars, rivalIndicator, playerIndicator };
 }
 
 export class RaceRenderer {
@@ -236,6 +242,12 @@ export class RaceRenderer {
       context.save();
       context.translate(point.x, point.y);
       context.drawImage(sheet, frame.x, frame.y, frame.width, frame.height, -size / 2, -size * 0.88, size, size);
+      if (isRival && this.assets.rivalIndicator) {
+        const crop = INDICATOR_CROPS.rival;
+        const width = Math.max(3, 18 * point.scale);
+        const height = width * crop.height / crop.width;
+        context.drawImage(this.assets.rivalIndicator, crop.x, crop.y, crop.width, crop.height, -width / 2, -size * 0.88 - height - Math.max(1, point.scale * 2), width, height);
+      }
       context.restore();
       return;
     }
@@ -277,6 +289,12 @@ export class RaceRenderer {
     context.save();
     const shake = race.impactTimer > 0 ? (Math.random() - 0.5) * 5 : 0;
     context.translate(VIEW.width / 2 + shake, 267 + shake);
+    if (this.assets.playerIndicator) {
+      const crop = INDICATOR_CROPS.player;
+      const width = 18;
+      const height = width * crop.height / crop.width;
+      context.drawImage(this.assets.playerIndicator, crop.x, crop.y, crop.width, crop.height, -width / 2, -67 - height, width, height);
+    }
     if (player.boosting) {
       context.fillStyle = "#ff6b21"; context.beginPath(); context.moveTo(-8, 8); context.lineTo(0, 39 + Math.random() * 9); context.lineTo(8, 8); context.fill();
       context.fillStyle = "#fff5a3"; context.beginPath(); context.moveTo(-3, 9); context.lineTo(0, 28 + Math.random() * 5); context.lineTo(3, 9); context.fill();

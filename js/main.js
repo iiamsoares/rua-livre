@@ -148,7 +148,7 @@ function handleEvents(events) {
 
 function updateHud() {
   if (!race) return;
-  element("#positionHud").innerHTML = `${race.position}<em>/8</em>`;
+  element("#positionHud").innerHTML = `${race.position}<em>/${RACE_RULES.opponents + 1}</em>`;
   element("#lapHud").textContent = `${race.lap}/${RACE_RULES.laps}`;
   element("#timeHud").textContent = formatTime(race.elapsed);
   element("#speedHud").textContent = Math.round(race.player.speed);

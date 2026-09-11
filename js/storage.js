@@ -1,4 +1,4 @@
-import { PAINTS, clamp } from "./config.js";
+import { PAINTS, RACE_RULES, clamp } from "./config.js";
 
 export const SAVE_KEY = "ruaLivre_save_v3";
 export const LEGACY_KEY = "ruaLivre2D_deluxe_v2";
@@ -15,7 +15,7 @@ export function sanitizeSave(candidate = {}) {
     credits: clamp(Number.isFinite(Number(candidate.credits)) ? Math.floor(Number(candidate.credits)) : 0, 0, 9999999),
     paint,
     preparation: clamp(Number.isFinite(Number(candidate.preparation)) ? Math.floor(Number(candidate.preparation)) : 1, 1, 3),
-    bestPosition: candidate.bestPosition == null ? null : clamp(Math.floor(Number(candidate.bestPosition)) || 8, 1, 8),
+    bestPosition: candidate.bestPosition == null ? null : clamp(Math.floor(Number(candidate.bestPosition)) || RACE_RULES.opponents + 1, 1, RACE_RULES.opponents + 1),
     bestTime: Number(candidate.bestTime) > 0 ? Number(candidate.bestTime) : null,
     audio: candidate.audio !== false,
   };

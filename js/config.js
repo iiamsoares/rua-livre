@@ -5,7 +5,7 @@ export const RACE_RULES = Object.freeze({
   fixedStep: 1 / 60,
   visibleDistance: 500,
   podiumSize: 3,
-  opponents: 7,
+  opponents: 3,
 });
 
 export const CAR = Object.freeze({
@@ -27,7 +27,7 @@ export const PAINTS = Object.freeze([
 ]);
 
 export const UPGRADE_COSTS = Object.freeze([0, 500, 900]);
-export const POSITION_REWARDS = Object.freeze([1000, 750, 600, 400, 300, 250, 200, 150]);
+export const POSITION_REWARDS = Object.freeze([1000, 750, 600, 400]);
 
 export function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 export function mod(value, divisor) { return ((value % divisor) + divisor) % divisor; }
