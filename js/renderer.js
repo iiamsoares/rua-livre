@@ -13,11 +13,11 @@ function loadImage(source) {
 }
 
 export async function loadGameAssets() {
-  const [background, playerCar] = await Promise.all([
+  const [background, playerSprite] = await Promise.all([
     loadImage("assets/scenery/rio-night-panorama.png"),
-    loadImage("assets/cars/player/falcao-gt-rear.png"),
+    loadImage("assets/cars/player/spritesheet_up.png"),
   ]);
-  return { background, playerCar };
+  return { background, playerSprite };
 }
 
 export class RaceRenderer {
@@ -29,26 +29,26 @@ export class RaceRenderer {
     this.assets = assets;
     this.paint = "#d7dde5";
     this.tintedCar = document.createElement("canvas");
-    this.tintedCar.width = 192;
-    this.tintedCar.height = 128;
+    this.tintedCar.width = assets.playerSprite?.width || 1254;
+    this.tintedCar.height = assets.playerSprite?.height || 1254;
     this.context.imageSmoothingEnabled = false;
   }
 
   setPaint(paint) {
     this.paint = paint;
-    const image = this.assets.playerCar;
+    const image = this.assets.playerSprite;
     const context = this.tintedCar.getContext("2d");
-    context.clearRect(0, 0, 192, 128);
+    context.clearRect(0, 0, this.tintedCar.width, this.tintedCar.height);
     if (!image) return;
     context.imageSmoothingEnabled = false;
-    context.drawImage(image, 0, 0, 192, 128);
+    context.drawImage(image, 0, 0, this.tintedCar.width, this.tintedCar.height);
     context.globalCompositeOperation = "source-atop";
     context.globalAlpha = 0.3;
     context.fillStyle = paint;
-    context.fillRect(0, 0, 192, 128);
+    context.fillRect(0, 0, this.tintedCar.width, this.tintedCar.height);
     context.globalCompositeOperation = "source-over";
     context.globalAlpha = 0.62;
-    context.drawImage(image, 0, 0, 192, 128);
+    context.drawImage(image, 0, 0, this.tintedCar.width, this.tintedCar.height);
     context.globalAlpha = 1;
   }
 
@@ -252,9 +252,13 @@ export class RaceRenderer {
       context.fillStyle = "#ff6b21"; context.beginPath(); context.moveTo(-8, 8); context.lineTo(0, 39 + Math.random() * 9); context.lineTo(8, 8); context.fill();
       context.fillStyle = "#fff5a3"; context.beginPath(); context.moveTo(-3, 9); context.lineTo(0, 28 + Math.random() * 5); context.lineTo(3, 9); context.fill();
     }
-    if (this.assets.playerCar) {
-      context.rotate((player.drifting ? -0.035 : 0) * Math.sign(player.lateral || 1));
-      context.drawImage(this.tintedCar, -72, -64, 144, 96);
+    if (this.assets.playerSprite) {
+      const frameWidth = this.tintedCar.width / 4;
+      const frameHeight = this.tintedCar.height / 4;
+      const row = player.steerVisual < -0.45 ? 0 : player.steerVisual < -0.08 ? 1 : player.steerVisual > 0.45 ? 3 : 2;
+      const column = player.boosting ? Math.floor(race.elapsed * 12) % 4 : 2;
+      context.rotate((player.drifting ? -0.045 : 0) * Math.sign(player.steerVisual || 1));
+      context.drawImage(this.tintedCar, column * frameWidth, row * frameHeight, frameWidth, frameHeight, -68, -73, 136, 136);
     } else {
       context.fillStyle = this.paint; context.fillRect(-36, -35, 72, 57);
       context.fillStyle = "#111928"; context.fillRect(-24, -29, 48, 22);

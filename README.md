@@ -22,7 +22,7 @@ Depois, abra `http://127.0.0.1:4173`. Também é possível usar `npm.cmd run dev
 
 ## Objetivo
 
-Complete três voltas e termine entre os três primeiros. O prêmio da corrida pode ser usado para evoluir a Preparação do Falcão GT. Uma corrida sem colisões recebe bônus adicional.
+Complete três voltas e termine entre os três primeiros. O prêmio da corrida pode ser usado para evoluir a Preparação do UP TSI. Uma corrida sem colisões recebe bônus adicional.
 
 ## Testes
 

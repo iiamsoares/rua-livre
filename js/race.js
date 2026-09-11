@@ -73,6 +73,7 @@ export function createRace(save, track, seed = Date.now()) {
       collisionCooldown: 0,
       drifting: false,
       boosting: false,
+      steerVisual: 0,
     },
     rivals,
     traffic,
@@ -193,6 +194,7 @@ export function updateRace(race, input, dt) {
   const steering = input.steer * race.stats.steering * (0.28 + speedRatio * 0.72);
   player.drifting = Boolean(input.brake && input.steer && player.speed > 82);
   player.boosting = Boolean(input.nitro && player.nitro > 0 && player.speed > 55);
+  player.steerVisual += (input.steer - player.steerVisual) * Math.min(1, dt * 9);
 
   if (input.accelerate) player.speed += race.stats.acceleration * dt;
   else player.speed -= 19 * dt;

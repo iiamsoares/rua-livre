@@ -9,7 +9,7 @@ export const RACE_RULES = Object.freeze({
 });
 
 export const CAR = Object.freeze({
-  name: "Falcão GT",
+  name: "UP TSI",
   baseTopSpeed: 190,
   baseAcceleration: 52,
   brakePower: 102,
