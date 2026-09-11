@@ -13,11 +13,12 @@ function loadImage(source) {
 }
 
 export async function loadGameAssets() {
-  const [background, playerSprite] = await Promise.all([
+  const [background, playerSprite, npcCars] = await Promise.all([
     loadImage("assets/scenery/rio-night-panorama.png"),
     loadImage("assets/cars/player/spritesheet_up.png"),
+    loadImage("assets/cars/player/npcs_carro.png"),
   ]);
-  return { background, playerSprite };
+  return { background, playerSprite, npcCars };
 }
 
 export class RaceRenderer {
@@ -212,6 +213,19 @@ export class RaceRenderer {
 
   drawWorldCar(point, entity, isRival = false) {
     const context = this.context;
+    if (this.assets.npcCars && Number.isInteger(entity.spriteIndex)) {
+      const sheet = this.assets.npcCars;
+      const frameWidth = sheet.width / 4;
+      const frameHeight = sheet.height / 4;
+      const column = entity.spriteIndex % 4;
+      const row = Math.floor(entity.spriteIndex / 4);
+      const size = (entity.kind === "van" ? 64 : 58) * point.scale;
+      context.save();
+      context.translate(point.x, point.y);
+      context.drawImage(sheet, column * frameWidth, row * frameHeight, frameWidth, frameHeight, -size / 2, -size * 0.88, size, size);
+      context.restore();
+      return;
+    }
     const width = (entity.kind === "van" ? 28 : 23) * point.scale;
     const height = (entity.kind === "van" ? 35 : 27) * point.scale;
     context.save(); context.translate(point.x, point.y);

@@ -4,6 +4,8 @@ import { curveAt } from "./track.js";
 const RIVAL_SPEEDS = [172, 168, 164, 160, 156, 152, 148];
 const RIVAL_COLORS = ["#ff4b4f", "#36a7ff", "#ffd43c", "#9c65ed", "#4ed48b", "#ff873b", "#e9edf6"];
 const TRAFFIC_COLORS = ["#e64950", "#268cd7", "#e7b82b", "#774fc4", "#43ad72", "#dedfe5"];
+const RIVAL_SPRITES = [1, 2, 3, 4, 6, 9, 14];
+const TRAFFIC_SPRITES = [5, 7, 8, 10, 11, 12, 13, 15];
 
 export function carStats(preparation = 1) {
   const level = clamp(Math.floor(preparation), 1, 3);
@@ -20,6 +22,7 @@ function makeTraffic(random, distance) {
     lane: [-0.62, 0, 0.62][Math.floor(random() * 3)],
     speed: 72 + random() * 38,
     color: TRAFFIC_COLORS[Math.floor(random() * TRAFFIC_COLORS.length)],
+    spriteIndex: TRAFFIC_SPRITES[Math.floor(random() * TRAFFIC_SPRITES.length)],
     kind: random() < 0.2 ? "van" : "car",
     hitTimer: 0,
   };
@@ -36,6 +39,7 @@ export function createRace(save, track, seed = Date.now()) {
     laneTimer: 1 + random() * 2,
     speed: speed + random() * 2,
     color: RIVAL_COLORS[index],
+    spriteIndex: RIVAL_SPRITES[index],
     finishedAt: null,
   }));
   const traffic = Array.from({ length: 8 }, (_, index) => makeTraffic(random, 260 + index * 105 + random() * 45));

@@ -30,6 +30,13 @@ test("contagem regressiva bloqueia o movimento e emite a largada", () => {
   assert.ok(race.player.distance > 0);
 });
 
+test("rivais e trânsito recebem modelos válidos da folha de NPCs", () => {
+  const race = createRace({ preparation: 1 }, createRioTrack(), 22);
+  assert.equal(new Set(race.rivals.map((rival) => rival.spriteIndex)).size, 7);
+  assert.ok(race.rivals.every((rival) => rival.spriteIndex >= 0 && rival.spriteIndex < 16));
+  assert.ok(race.traffic.every((vehicle) => vehicle.spriteIndex >= 0 && vehicle.spriteIndex < 16));
+});
+
 test("uma corrida pausada não altera o estado", () => {
   const race = createRace({ preparation: 1 }, createRioTrack(), 11);
   race.countdown = 0;
