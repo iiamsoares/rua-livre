@@ -27,6 +27,12 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
 .screen { display: none; min-height: calc(100vh - 76px); }
 .screen.active { display: block; }
 
+.rua-livre-logo {
+  width: 100%;
+  max-width: 230px;
+  height: auto;
+}
+
 .topbar {
   position: relative;
   z-index: 20;
