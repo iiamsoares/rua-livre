@@ -2,8 +2,13 @@
 .DS_Store
 Thumbs.db
 .vscode/
+.deck-build/
 
 # Dependencies and local artifacts
 node_modules/
 coverage/
 dist/
+
+# References Files
+referencias/
+
