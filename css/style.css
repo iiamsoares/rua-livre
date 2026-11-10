@@ -175,6 +175,41 @@ kbd { display: inline-grid; min-width: 31px; height: 29px; margin-right: 4px; pl
 .how-grid strong { display: block; margin-top: 9px; color: var(--lime); font-size: 10px; letter-spacing: .1em; }
 .danger-link { border: 0; color: #ff8d98; background: none; padding: 8px 0; cursor: pointer; font-size: 10px; letter-spacing: .1em; }
 
+/* Race-only console treatment: menus and the player's garage stay intact. */
+.race-screen { background: #080a18; }
+.race-shell { border: 4px solid #8183ac; box-shadow: 0 0 0 4px #202339, 0 20px 60px #0009; }
+.race-shell .hud { inset: 9px 12px auto; }
+.race-shell .hud-box, .race-shell .map-box {
+  border: 0; background: transparent; box-shadow: none; transform: none;
+  padding: 2px 6px; min-width: 70px;
+  font-family: "Courier New", monospace; font-weight: 900;
+  text-shadow: 2px 2px #191633, -1px -1px #191633, 1px -1px #191633, -1px 1px #191633;
+}
+.race-shell .hud-box small { color: #fff3b4; font-size: clamp(9px, 1vw, 13px); font-style: normal; }
+.race-shell .hud-box strong { color: #fff; font-family: "Courier New", monospace; font-style: normal; font-size: clamp(22px, 3vw, 38px); }
+.race-shell .hud-box.center { transform: translateX(-50%); }
+.race-shell .hud-box.center strong { color: #ffe45e; font-size: clamp(18px, 2.4vw, 30px); }
+.race-shell .hud-box.position strong { color: #ffe45e; }
+.race-shell .map-box { background: #151632b3; height: 62px; width: 98px; border: 2px solid #969ac3; }
+.race-shell .speedometer {
+  clip-path: none; width: 144px; height: 70px; left: 12px; bottom: 10px;
+  border: 2px solid #969ac3; padding: 6px 10px; background: #151632;
+  font-family: "Courier New", monospace; box-shadow: 3px 3px #070a14;
+}
+.race-shell .speedometer strong { font-family: inherit; font-size: clamp(30px, 4vw, 45px); font-style: normal; color: #fff; text-shadow: 2px 2px #53488e; }
+.race-shell .speedometer small { color: #ffeb71; font-weight: bold; }
+.race-shell .speedometer span { right: 9px; bottom: 9px; font-weight: bold; }
+.race-shell .nitro-hud, .race-shell .health-hud {
+  transform: none; right: 12px; bottom: 10px; padding: 5px 9px;
+  border: 2px solid #969ac3; background: #151632; width: min(24%, 230px);
+  font-family: "Courier New", monospace; box-shadow: 3px 3px #070a14;
+}
+.race-shell .health-hud { bottom: 58px; }
+.race-shell .nitro-hud b { background: repeating-linear-gradient(90deg, #ffe259 0 8px, #151632 8px 10px); }
+.race-shell .health-hud b { background: repeating-linear-gradient(90deg, #63ec97 0 8px, #151632 8px 10px); }
+.race-shell .race-message { font-family: "Courier New", monospace; font-style: normal; transform: translate(-50%, -50%); text-shadow: 4px 4px #382f69, 7px 7px #101222; color: #ffe75b; }
+.race-shell .pause-button { top: 83px; border-color: #969ac3; background: #151632; }
+
 @media (max-width: 900px) {
   .profile > span:nth-child(2) { display: none; }
   .title-content { padding-left: 34px; }
@@ -206,4 +241,9 @@ kbd { display: inline-grid; min-width: 31px; height: 29px; margin-right: 4px; pl
   .speedometer { left: 5px; bottom: 5px; transform: scale(.72); transform-origin: bottom left; }
   .nitro-hud { right: 7px; bottom: 8px; }
   .health-hud { display: none; }
+  .race-shell .hud { inset: 4px 4px auto; }
+  .race-shell .hud-box { min-width: 48px; }
+  .race-shell .pause-button { top: 52px; width: 26px; height: 26px; right: 7px; }
+  .race-shell .speedometer { left: 5px; bottom: 5px; }
+  .race-shell .nitro-hud { right: 5px; bottom: 5px; width: 27%; }
 }

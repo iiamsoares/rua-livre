@@ -45,7 +45,19 @@ export function segmentAt(track, distance) {
   return track.segments[index];
 }
 
-export function curveAt(track, distance) { return segmentAt(track, distance).curve; }
+export function curveAt(track, distance) {
+  const current = segmentAt(track, distance);
+  const next = track.segments[(current.index + 1) % track.segments.length];
+  const fraction = mod(distance, track.segmentLength) / track.segmentLength;
+  const eased = fraction * fraction * (3 - 2 * fraction);
+  return current.curve + (next.curve - current.curve) * eased;
+}
+
+// Smooth, periodic elevation: the lap seam has neither a height nor a slope jump.
+export function elevationAt(track, distance) {
+  const phase = mod(distance, track.length) / track.length * Math.PI * 2;
+  return 22 * Math.sin(phase * 2) + 9 * Math.sin(phase * 3);
+}
 
 function buildMapPoints(track) {
   let x = 0;

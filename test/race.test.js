@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { calculateReward, carStats, createRace, updateRace } from "../js/race.js";
-import { createRioTrack, curveAt, segmentAt } from "../js/track.js";
+import { createRioTrack, curveAt, elevationAt, segmentAt } from "../js/track.js";
 
 const idle = { accelerate: false, brake: false, steer: 0, nitro: false };
 
@@ -15,7 +15,7 @@ test("a pista possui 1,68 km e segmentos navegáveis em loop", () => {
 });
 
 test("preparação aumenta desempenho sem ultrapassar três estágios", () => {
-  assert.deepEqual(carStats(1), { topSpeed: 190, acceleration: 52, steering: 1.04 });
+  assert.deepEqual(carStats(1), { topSpeed: 190, acceleration: 68, steering: 1.28 });
   assert.equal(carStats(3).topSpeed, 206);
   assert.deepEqual(carStats(99), carStats(3));
 });
@@ -65,7 +65,8 @@ test("o jogador não atravessa um veículo na mesma faixa", () => {
   assert.equal(race.player.collisions, 1);
 
   race.player.lateral = 0.62;
-  for (let index = 0; index < 180; index += 1) updateRace(race, { ...idle, accelerate: true }, 1 / 60);
+  // Check before the passed traffic car falls 65 m behind and is respawned ahead.
+  for (let index = 0; index < 120; index += 1) updateRace(race, { ...idle, accelerate: true }, 1 / 60);
   assert.ok(race.player.distance > obstacle.distance);
 });
 
@@ -92,4 +93,53 @@ test("premiação diferencia pódio, corrida limpa e abandono", () => {
   assert.deepEqual(calculateReward(1, 0), { base: 1000, clean: 250, total: 1250 });
   assert.deepEqual(calculateReward(4, 2), { base: 400, clean: 0, total: 400 });
   assert.deepEqual(calculateReward(4, 0, false), { base: 100, clean: 0, total: 100 });
+});
+
+test("rivais largam parados e aceleram sem saltar para a velocidade máxima", () => {
+  const race = createRace({ preparation: 1 }, createRioTrack(), 44);
+  assert.ok(race.rivals.every((rival) => rival.speed === 0));
+  race.countdown = 0;
+  const initial = race.rivals.map((rival) => rival.distance);
+  updateRace(race, idle, 1 / 60);
+  race.rivals.forEach((rival, index) => {
+    assert.ok(rival.speed > 0 && rival.speed < 2);
+    assert.ok(rival.distance - initial[index] < 0.01);
+  });
+});
+
+test("relevo e curvas são contínuos inclusive na passagem de volta", () => {
+  const track = createRioTrack();
+  assert.equal(elevationAt(track, 0), elevationAt(track, track.length));
+  assert.ok(Math.abs(elevationAt(track, 200)) > 5);
+  for (let distance = 0; distance <= track.length; distance += track.segmentLength) {
+    assert.ok(Math.abs(curveAt(track, distance - 0.001) - curveAt(track, distance + 0.001)) < 0.001);
+  }
+});
+
+test("a força da curva empurra para fora e a direção permite compensar", () => {
+  const race = createRace({ preparation: 1 }, createRioTrack(), 45);
+  race.countdown = 0;
+  race.player.distance = 240;
+  race.player.speed = 190;
+  race.rivals = [];
+  race.traffic = [];
+  updateRace(race, { ...idle, accelerate: true }, 1 / 60);
+  assert.ok(race.player.lateral < 0);
+  updateRace(race, { ...idle, accelerate: true, steer: 1 }, 1 / 60);
+  assert.ok(race.player.lateral > 0);
+  assert.ok(race.player.heading > 0);
+});
+
+test("a corrida ainda permite completar três voltas com o novo controle", () => {
+  const race = createRace({ preparation: 1 }, createRioTrack(), 46);
+  race.countdown = 0;
+  race.traffic = [];
+  race.rivals = [];
+  for (let frame = 0; frame < 60 * 120 && !race.finished; frame++) {
+    const steer = Math.abs(race.player.lateral) > 0.03 ? -Math.sign(race.player.lateral) : 0;
+    updateRace(race, { ...idle, accelerate: true, steer }, 1 / 60);
+  }
+  assert.equal(race.finishReason, "complete");
+  assert.equal(race.lap, 3);
+  assert.equal(race.player.collisions, 0);
 });

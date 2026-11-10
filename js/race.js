@@ -38,13 +38,14 @@ export function createRace(save, track, seed = Date.now()) {
     lane: [-0.62, 0, 0.62][index % 3],
     laneTarget: [-0.62, 0, 0.62][index % 3],
     laneTimer: 1 + random() * 2,
-    speed: speed + random() * 2,
+    speed: 0,
+    targetSpeed: speed + random() * 2,
     color: RIVAL_COLORS[index],
     spriteIndex: RIVAL_SPRITES[index],
     playerContact: false,
     finishedAt: null,
   }));
-  const traffic = Array.from({ length: 5 }, (_, index) => makeTraffic(random, 280 + index * 145 + random() * 55));
+  const traffic = Array.from({ length: 5 }, (_, index) => makeTraffic(random, 180 + index * 130 + random() * 55));
   const pickups = [];
   for (let distance = 420, index = 0; distance < totalDistance; distance += 520, index += 1) {
     pickups.push({ distance, lane: [-0.62, 0, 0.62][index % 3], collected: false });
@@ -80,6 +81,7 @@ export function createRace(save, track, seed = Date.now()) {
       drifting: false,
       boosting: false,
       steerVisual: 0,
+      heading: 0,
     },
     rivals,
     traffic,
@@ -98,7 +100,8 @@ function updateRivals(race, dt) {
     }
     rival.lane += (rival.laneTarget - rival.lane) * Math.min(1, dt * 1.35);
     const curvePenalty = Math.abs(curveAt(race.track, rival.distance)) * 3.5;
-    rival.distance += Math.max(120, rival.speed - curvePenalty) / 3.6 * dt;
+    rival.speed = Math.min(rival.targetSpeed - curvePenalty, rival.speed + 62 * dt);
+    rival.distance += rival.speed / 3.6 * dt;
     if (rival.distance >= race.totalDistance) {
       rival.distance = race.totalDistance;
       rival.finishedAt = race.elapsed;
@@ -228,7 +231,8 @@ export function updateRace(race, input, dt) {
   player.speed = clamp(player.speed, 0, topSpeed);
   const driftGrip = player.drifting ? 1.18 : 1;
   player.lateral += steering * driftGrip * dt;
-  player.lateral += curve * speedRatio * speedRatio * 0.19 * dt;
+  player.lateral -= curve * speedRatio * speedRatio * 0.38 * dt;
+  player.heading += curve * player.speed / 3.6 * dt * 0.006;
 
   if (Math.abs(player.lateral) > 0.93) player.speed = Math.max(0, player.speed - 58 * dt);
   if (Math.abs(player.lateral) > 1.16 && player.collisionCooldown === 0) {

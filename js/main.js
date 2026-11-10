@@ -89,7 +89,7 @@ function updateGarage() {
   element("#speedValue").textContent = Math.round(stats.topSpeed);
   element("#accelValue").textContent = Math.round(stats.acceleration);
   element("#speedStat").style.width = `${Math.round(stats.topSpeed / 220 * 100)}%`;
-  element("#accelStat").style.width = `${Math.round(stats.acceleration / 65 * 100)}%`;
+  element("#accelStat").style.width = `${Math.min(100, Math.round(stats.acceleration / 80 * 100))}%`;
   element("#upgradeLevel").textContent = `ESTÁGIO ${save.preparation}/3`;
   const button = element("#upgradeButton");
   const maxed = save.preparation >= 3;

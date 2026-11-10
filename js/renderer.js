@@ -1,8 +1,13 @@
 import { PLAYER_CARS, RACE_RULES, VIEW, clamp, mod } from "./config.js";
-import { curveAt, segmentAt } from "./track.js";
+import { curveAt, elevationAt, segmentAt } from "./track.js";
 
 const ROAD_SLICE = 5;
 const CAMERA_DEPTH = 40;
+
+export function roadHorizon(race) {
+  const grade = (elevationAt(race.track, race.player.distance + 60) - elevationAt(race.track, race.player.distance)) / 60;
+  return VIEW.horizon + grade * 42;
+}
 
 // Reciprocal depth makes nearby asphalt rush past while the horizon stays distant.
 export function roadPerspective(distance) {
@@ -59,7 +64,10 @@ export async function loadGameAssets() {
 export class RaceRenderer {
   constructor(canvas, mapCanvas, assets) {
     this.canvas = canvas;
+    canvas.width = VIEW.pixelWidth;
+    canvas.height = VIEW.pixelHeight;
     this.context = canvas.getContext("2d");
+    this.context.setTransform(VIEW.pixelWidth / VIEW.width, 0, 0, VIEW.pixelHeight / VIEW.height, 0, 0);
     this.mapCanvas = mapCanvas;
     this.mapContext = mapCanvas.getContext("2d");
     this.assets = assets;
@@ -82,6 +90,7 @@ export class RaceRenderer {
     for (let distance = ROAD_SLICE - mod(race.player.distance, ROAD_SLICE); distance < RACE_RULES.visibleDistance; distance += ROAD_SLICE) distances.push(distance);
     distances.push(RACE_RULES.visibleDistance);
     let previousDistance = 0;
+    const horizon = roadHorizon(race);
     for (const distance of distances) {
       const depth = distance / RACE_RULES.visibleDistance;
       const perspective = roadPerspective(distance);
@@ -90,12 +99,13 @@ export class RaceRenderer {
       bend += heading * step;
       previousDistance = distance;
       const half = 13 + perspective * 274;
-      const cameraOffset = race.player.lateral * half * 0.62;
+      const cameraOffset = race.player.lateral * (half * 0.62 - 34);
+      const hill = (elevationAt(race.track, race.player.distance + distance) - elevationAt(race.track, race.player.distance)) * perspective * 0.7;
       points.push({
         distance,
         depth,
-        y: VIEW.horizon + perspective * (VIEW.roadBottom - VIEW.horizon),
-        center: VIEW.width / 2 - cameraOffset + bend * CAMERA_DEPTH / (CAMERA_DEPTH + distance) * 0.11,
+        y: horizon + perspective * (VIEW.roadBottom - horizon) - hill,
+        center: VIEW.width / 2 - cameraOffset + bend * CAMERA_DEPTH / (CAMERA_DEPTH + distance) * 1.1,
         half,
         scale: half / 287,
       });
@@ -122,9 +132,15 @@ export class RaceRenderer {
   drawBackground(race) {
     const context = this.context;
     const image = this.assets.background;
+    const horizon = roadHorizon(race);
+    context.fillStyle = "#161c46";
+    context.fillRect(0, 0, VIEW.width, VIEW.height);
     if (image) {
-      const drift = Math.sin(race.player.distance * 0.002) * 14 - race.player.lateral * 4;
-      context.drawImage(image, 0, 0, image.width, image.height, drift - 20, 0, VIEW.width + 40, 126);
+      const drift = -mod((race.player.heading || 0) * 55, VIEW.width);
+      // Two copies wrap continuously; turning scrolls the skyline, stopping freezes it.
+      for (let tile = 0; tile < 2; tile++) {
+        context.drawImage(image, 0, 0, image.width, image.height, Math.floor(drift + tile * VIEW.width), horizon - 112, VIEW.width + 1, 114);
+      }
     } else {
       const gradient = context.createLinearGradient(0, 0, 0, VIEW.horizon);
       gradient.addColorStop(0, "#080d2a");
@@ -133,51 +149,39 @@ export class RaceRenderer {
       context.fillStyle = gradient;
       context.fillRect(0, 0, VIEW.width, VIEW.horizon + 10);
     }
-    context.fillStyle = "#09101b";
-    context.fillRect(0, VIEW.horizon, VIEW.width, VIEW.height - VIEW.horizon);
+    context.fillStyle = "#124435";
+    context.fillRect(0, horizon, VIEW.width, VIEW.height - horizon);
   }
 
   drawRoad(race, road) {
     const context = this.context;
-    for (let index = road.length - 2; index >= 0; index -= 1) {
-      const far = road[index + 1];
-      const near = road[index];
-      const worldDistance = race.player.distance + (near.distance + far.distance) / 2;
+    const pixel = VIEW.height / VIEW.pixelHeight;
+    // One opaque strip per native pixel row: no antialiased green seams between polygons.
+    for (let y = Math.ceil(road.at(-1).y / pixel) * pixel; y < VIEW.height; y += pixel) {
+      const farIndex = road.findIndex((point) => point.y <= y);
+      if (farIndex < 1) continue;
+      const near = road[farIndex - 1];
+      const far = road[farIndex];
+      const mix = (y - near.y) / (far.y - near.y);
+      const center = near.center + (far.center - near.center) * mix;
+      const half = near.half + (far.half - near.half) * mix;
+      const worldDistance = race.player.distance + near.distance + (far.distance - near.distance) * mix;
+      const left = Math.floor((center - half) / pixel) * pixel;
+      const right = Math.ceil((center + half) / pixel) * pixel;
       const stripe = Math.floor(worldDistance / 10) % 2;
-      context.fillStyle = stripe ? "#17382e" : "#10291f";
-      context.fillRect(0, far.y, VIEW.width, near.y - far.y + 1);
-
-      context.beginPath();
-      context.moveTo(far.center - far.half, far.y);
-      context.lineTo(far.center + far.half, far.y);
-      context.lineTo(near.center + near.half, near.y);
-      context.lineTo(near.center - near.half, near.y);
-      context.closePath();
-      context.fillStyle = stripe ? "#34394a" : "#2c3140";
-      context.fill();
-
-      const shoulderFar = Math.max(1, far.half * 0.055);
-      const shoulderNear = Math.max(1, near.half * 0.055);
-      for (const side of [-1, 1]) {
-        context.beginPath();
-        context.moveTo(far.center + side * far.half, far.y);
-        context.lineTo(far.center + side * (far.half - shoulderFar), far.y);
-        context.lineTo(near.center + side * (near.half - shoulderNear), near.y);
-        context.lineTo(near.center + side * near.half, near.y);
-        context.closePath();
-        context.fillStyle = stripe ? "#fff4d9" : "#ed493e";
-        context.fill();
-      }
-
+      context.fillStyle = stripe ? "#196344" : "#124c36";
+      context.fillRect(0, y, VIEW.width, pixel);
+      context.fillStyle = stripe ? "#fff4d9" : "#ed493e";
+      context.fillRect(left, y, right - left, pixel);
+      const shoulder = Math.max(pixel, Math.round(half * 0.075 / pixel) * pixel);
+      context.fillStyle = stripe ? "#66647c" : "#5b5970";
+      context.fillRect(left + shoulder, y, right - left - shoulder * 2, pixel);
       const laneStripe = Math.floor(worldDistance / 10) % 3;
       if (laneStripe < 2) {
+        context.fillStyle = "#e8edf5";
+        const width = Math.max(pixel, Math.round(half / 100) * pixel);
         for (const lane of [-1 / 3, 1 / 3]) {
-          context.beginPath();
-          context.moveTo(far.center + lane * far.half, far.y);
-          context.lineTo(near.center + lane * near.half, near.y);
-          context.strokeStyle = "#e8edf5c9";
-          context.lineWidth = Math.max(0.5, near.scale * 3);
-          context.stroke();
+          context.fillRect(Math.round((center + lane * half) / pixel) * pixel, y, width, pixel);
         }
       }
     }
@@ -206,7 +210,8 @@ export class RaceRenderer {
       const side = Math.floor(worldDistance / 28) % 2 ? -1 : 1;
       const point = this.project(road, distance, side * 1.9);
       if (point.x < -35 || point.x > VIEW.width + 35) continue;
-      if (segment.decor === "palms" || segment.decor === "bay") this.drawPalm(point.x, point.y, point.scale * 0.78);
+      if (Math.abs(segment.curve) > 0.35 && Math.floor(worldDistance / 28) % 3 === 0) this.drawChevron(point.x, point.y, point.scale, Math.sign(segment.curve));
+      else if (segment.decor === "palms" || segment.decor === "bay") this.drawPalm(point.x, point.y, point.scale * 1.3);
       else if (segment.decor === "tunnel") this.drawLamp(point.x, point.y, point.scale);
       else if (segment.index % 3 === 0) this.drawSign(point.x, point.y, point.scale, side);
       else this.drawLamp(point.x, point.y, point.scale);
@@ -216,9 +221,23 @@ export class RaceRenderer {
   drawPalm(x, y, scale) {
     const context = this.context;
     context.save(); context.translate(x, y); context.scale(scale, scale);
-    context.strokeStyle = "#432919"; context.lineWidth = 4; context.beginPath(); context.moveTo(0, 2); context.quadraticCurveTo(-3, -28, 3, -53); context.stroke();
-    context.strokeStyle = "#113c2b"; context.lineWidth = 5;
+    context.strokeStyle = "#bd7c48"; context.lineWidth = 5; context.beginPath(); context.moveTo(0, 2); context.quadraticCurveTo(-3, -28, 3, -53); context.stroke();
+    context.strokeStyle = "#3ea04b"; context.lineWidth = 6;
     for (let index = 0; index < 7; index += 1) { const angle = -2.7 + index * 0.47; context.beginPath(); context.moveTo(3, -51); context.lineTo(3 + Math.cos(angle) * 24, -51 + Math.sin(angle) * 16); context.stroke(); }
+    context.restore();
+  }
+
+  drawChevron(x, y, scale, direction) {
+    const context = this.context;
+    context.save(); context.translate(x, y); context.scale(scale, scale);
+    context.fillStyle = "#c5c6d1"; context.fillRect(-2, -27, 4, 28);
+    context.fillStyle = "#ffe85b"; context.fillRect(-17, -48, 34, 24);
+    context.fillStyle = "#252441";
+    for (const offset of [-8, 6]) {
+      context.beginPath(); context.moveTo(offset - direction * 5, -45); context.lineTo(offset + direction * 4, -36);
+      context.lineTo(offset - direction * 5, -27); context.lineTo(offset, -27);
+      context.lineTo(offset + direction * 9, -36); context.lineTo(offset, -45); context.fill();
+    }
     context.restore();
   }
 
@@ -252,7 +271,7 @@ export class RaceRenderer {
       context.drawImage(sheet, frame.x, frame.y, frame.width, frame.height, -size / 2, -size * 0.88, size, size);
       if (isRival && this.assets.rivalIndicator) {
         const crop = INDICATOR_CROPS.rival;
-        const width = Math.max(3, 18 * point.scale);
+      const width = Math.max(3, 11 * point.scale);
         const height = width * crop.height / crop.width;
         context.drawImage(this.assets.rivalIndicator, crop.x, crop.y, crop.width, crop.height, -width / 2, -size * 0.88 - height - Math.max(1, point.scale * 2), width, height);
       }
@@ -297,22 +316,29 @@ export class RaceRenderer {
     context.save();
     const shake = race.impactTimer > 0 ? (Math.random() - 0.5) * 5 : 0;
     const vibration = Math.sin(race.player.distance * 1.8) * Math.min(0.65, player.speed / 280);
-    context.translate(VIEW.width / 2 + shake, 267 + shake + vibration);
+    context.translate(VIEW.width / 2 + player.lateral * 34 + shake, 267 + shake + vibration);
     if (this.assets.playerIndicator) {
       const crop = INDICATOR_CROPS.player;
-      const width = 18;
+      const width = 10;
       const height = width * crop.height / crop.width;
-      context.drawImage(this.assets.playerIndicator, crop.x, crop.y, crop.width, crop.height, -width / 2, -67 - height, width, height);
+      context.drawImage(this.assets.playerIndicator, crop.x, crop.y, crop.width, crop.height, -width / 2, -61 - height, width, height);
     }
     if (player.boosting) {
-      context.fillStyle = "#ff6b21"; context.beginPath(); context.moveTo(-8, 8); context.lineTo(0, 39 + Math.random() * 9); context.lineTo(8, 8); context.fill();
-      context.fillStyle = "#fff5a3"; context.beginPath(); context.moveTo(-3, 9); context.lineTo(0, 28 + Math.random() * 5); context.lineTo(3, 9); context.fill();
+      context.fillStyle = "#ff6b21"; context.fillRect(-14, -12, 8, 10 + Math.floor(race.elapsed * 20) % 5);
+      context.fillStyle = "#fff5a3"; context.fillRect(-12, -12, 4, 9);
+    }
+    if (player.drifting || (Math.abs(player.lateral) > 0.93 && player.speed > 30)) {
+      context.fillStyle = player.drifting ? "#c5c3d8" : "#d7b373";
+      for (let index = 0; index < 4; index++) {
+        const phase = mod(player.distance * 0.2 + index * 0.25, 1);
+        context.fillRect((index % 2 ? 25 : -30) + player.steerVisual * phase * 10, -8 + phase * 8, 2 + phase * 6, 2 + phase * 3);
+      }
     }
     if (this.playerSprite) {
       const row = this.playerCar.spriteRows === 3
         ? (player.steerVisual < -0.12 ? 0 : player.steerVisual > 0.12 ? 2 : 1)
         : (player.steerVisual < -0.45 ? 0 : player.steerVisual < -0.08 ? 1 : player.steerVisual > 0.45 ? 3 : 2);
-      const column = player.boosting ? Math.floor(race.elapsed * 12) % 4 : 2;
+      const column = player.speed > 10 ? Math.floor(player.distance * 0.8) % 4 : 2;
       const frame = spriteCell(this.playerSprite, row * 4 + column, null, this.playerCar.spriteRows);
       context.rotate((player.drifting ? -0.045 : 0) * Math.sign(player.steerVisual || 1));
       context.drawImage(this.playerSprite, frame.x, frame.y, frame.width, frame.height, -32, -64, 64, 64);
@@ -326,15 +352,16 @@ export class RaceRenderer {
 
   drawAtmosphere(race) {
     const context = this.context;
-    const vignette = context.createRadialGradient(240, 142, 75, 240, 142, 290);
-    vignette.addColorStop(0.5, "#0000"); vignette.addColorStop(1, "#0009");
-    context.fillStyle = vignette; context.fillRect(0, 0, VIEW.width, VIEW.height);
-    if (race.player.speed > 178) {
-      context.strokeStyle = "#d9efff50";
-      for (let index = 0; index < 13; index += 1) {
-        const y = 120 + ((index * 37 + race.elapsed * 210) % 145);
-        const x = (index * 83) % VIEW.width;
-        context.beginPath(); context.moveTo(x, y); context.lineTo(x + (x < 240 ? -13 : 13), y + 3); context.stroke();
+    // Nitro is an accent, not floating streaks across normal driving.
+    if (race.player.boosting) {
+      context.strokeStyle = "#a3eeff";
+      context.lineWidth = 1;
+      for (let index = 0; index < 8; index += 1) {
+        const phase = mod(race.player.distance * 0.035 + index / 8, 1);
+        const side = index % 2 ? -1 : 1;
+        const x = 240 + side * (160 + phase * 90);
+        const y = 130 + phase * 125;
+        context.beginPath(); context.moveTo(x, y); context.lineTo(x + side * 12, y + 16); context.stroke();
       }
     }
   }

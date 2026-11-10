@@ -1,4 +1,4 @@
-export const VIEW = Object.freeze({ width: 480, height: 270, horizon: 105, roadBottom: 286 });
+export const VIEW = Object.freeze({ width: 480, height: 270, horizon: 88, roadBottom: 286, pixelWidth: 320, pixelHeight: 180 });
 
 export const RACE_RULES = Object.freeze({
   laps: 3,
@@ -10,9 +10,9 @@ export const RACE_RULES = Object.freeze({
 
 export const CAR = Object.freeze({
   baseTopSpeed: 190,
-  baseAcceleration: 52,
+  baseAcceleration: 68,
   brakePower: 102,
-  steering: 1.04,
+  steering: 1.28,
   nitroTopSpeed: 38,
   nitroAcceleration: 62,
 });
