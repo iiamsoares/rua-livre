@@ -42,7 +42,9 @@ Os testes cobrem pista, física, largada, pausa, chegada, premiação e migraç�
 
 ### Referências e materiais
 
-A referência de linguagem visual é Top Gear/Top Racer; esta implementação não inclui código, sprites ou músicas extraídos desses jogos. A abordagem pseudo-3D foi estudada nos [artigos de Jake Gordon](https://jakesgordon.com/writing/javascript-racer-v2-curves/) e no [JavaScript Racer](https://github.com/jakesgordon/javascript-racer). Nenhum arquivo desse repositório foi incorporado: o README dele restringe o reuso da música incluída. Os assets existentes do Rua Livre foram mantidos, e os novos efeitos e a trilha são gerados pelo código do projeto. Não foi identificado um pacote específico de Godenot para incorporar.
+A referência de linguagem visual é Top Gear/Top Racer; esta implementação não inclui código, sprites ou músicas extraídos desses jogos. A abordagem pseudo-3D foi estudada nos [artigos de Jake Gordon](https://jakesgordon.com/writing/javascript-racer-v2-curves/) e no [JavaScript Racer](https://github.com/jakesgordon/javascript-racer). Os assets existentes do Rua Livre foram mantidos, e os efeitos e a trilha são gerados pelo código do projeto.
+
+Na branch `feat/motor-jake-gordon`, uma adaptação inicial do código MIT de projeção e geração de pista está isolada em `js/engines/jake-gordon.js`. O jogo ainda usa o renderizador anterior: a conexão com a corrida será a próxima etapa. Consulte o [estado da integração](docs/integracao-jake-gordon.md) e a [licença original](vendor/javascript-racer/LICENSE). Música e sprites do exemplo não foram importados.
 
 ## Estrutura
 
