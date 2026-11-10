@@ -1,7 +1,20 @@
 import { PLAYER_CARS, RACE_RULES, VIEW, clamp, mod } from "./config.js";
 import { curveAt, segmentAt } from "./track.js";
 
-const ROAD_STEPS = 44;
+const ROAD_SLICE = 5;
+const CAMERA_DEPTH = 40;
+
+// Reciprocal depth makes nearby asphalt rush past while the horizon stays distant.
+export function roadPerspective(distance) {
+  const far = CAMERA_DEPTH / (CAMERA_DEPTH + RACE_RULES.visibleDistance);
+  return (CAMERA_DEPTH / (CAMERA_DEPTH + clamp(distance, 0, RACE_RULES.visibleDistance)) - far) / (1 - far);
+}
+
+export function sceneryPositions(playerDistance, spacing = 28) {
+  const first = Math.floor(playerDistance / spacing) + 1;
+  const last = Math.floor((playerDistance + RACE_RULES.visibleDistance) / spacing);
+  return Array.from({ length: Math.max(0, last - first + 1) }, (_, index) => (last - index) * spacing);
+}
 const NPC_GRID = Object.freeze({
   columns: [0, 308, 629, 944, 1254],
   rows: [0, 368, 652, 930, 1254],
@@ -64,38 +77,45 @@ export class RaceRenderer {
     const points = [];
     let heading = 0;
     let bend = 0;
-    for (let index = 0; index <= ROAD_STEPS; index += 1) {
-      const depth = index / ROAD_STEPS;
-      const distance = depth * RACE_RULES.visibleDistance;
-      const perspective = 1 - depth;
-      heading += curveAt(race.track, race.player.distance + distance) * 0.014;
-      bend += heading * 2.35;
-      const half = 13 + perspective * perspective * 274;
+    const distances = [0];
+    // Anchor polygon edges to the world, not the camera, for continuous scrolling.
+    for (let distance = ROAD_SLICE - mod(race.player.distance, ROAD_SLICE); distance < RACE_RULES.visibleDistance; distance += ROAD_SLICE) distances.push(distance);
+    distances.push(RACE_RULES.visibleDistance);
+    let previousDistance = 0;
+    for (const distance of distances) {
+      const depth = distance / RACE_RULES.visibleDistance;
+      const perspective = roadPerspective(distance);
+      const step = distance - previousDistance;
+      heading += curveAt(race.track, race.player.distance + distance) * step * 0.022;
+      bend += heading * step;
+      previousDistance = distance;
+      const half = 13 + perspective * 274;
       const cameraOffset = race.player.lateral * half * 0.62;
       points.push({
         distance,
         depth,
-        y: VIEW.horizon + perspective * perspective * (VIEW.roadBottom - VIEW.horizon),
-        center: VIEW.width / 2 - cameraOffset + bend * depth,
+        y: VIEW.horizon + perspective * (VIEW.roadBottom - VIEW.horizon),
+        center: VIEW.width / 2 - cameraOffset + bend * CAMERA_DEPTH / (CAMERA_DEPTH + distance) * 0.11,
         half,
+        scale: half / 287,
       });
     }
     return points;
   }
 
   project(road, distance, lane = 0) {
-    const depth = clamp(distance / RACE_RULES.visibleDistance, 0, 1);
-    const exact = depth * ROAD_STEPS;
-    const lower = road[Math.floor(exact)];
-    const upper = road[Math.min(ROAD_STEPS, Math.ceil(exact))];
-    const mix = exact - Math.floor(exact);
+    const clampedDistance = clamp(distance, 0, RACE_RULES.visibleDistance);
+    const upperIndex = Math.max(1, road.findIndex((point) => point.distance >= clampedDistance));
+    const lower = road[upperIndex - 1];
+    const upper = road[upperIndex];
+    const mix = (clampedDistance - lower.distance) / (upper.distance - lower.distance);
     const center = lower.center + (upper.center - lower.center) * mix;
     const half = lower.half + (upper.half - lower.half) * mix;
     return {
       x: center + lane * half * 0.62,
       y: lower.y + (upper.y - lower.y) * mix,
       half,
-      scale: 0.08 + Math.pow(1 - depth, 1.35) * 0.92,
+      scale: half / 287,
     };
   }
 
@@ -103,8 +123,8 @@ export class RaceRenderer {
     const context = this.context;
     const image = this.assets.background;
     if (image) {
-      const drift = Math.sin(race.player.distance * 0.0004) * 5;
-      context.drawImage(image, 0, 0, image.width, image.height, drift - 5, 0, VIEW.width + 10, 126);
+      const drift = Math.sin(race.player.distance * 0.002) * 14 - race.player.lateral * 4;
+      context.drawImage(image, 0, 0, image.width, image.height, drift - 20, 0, VIEW.width + 40, 126);
     } else {
       const gradient = context.createLinearGradient(0, 0, 0, VIEW.horizon);
       gradient.addColorStop(0, "#080d2a");
@@ -119,11 +139,12 @@ export class RaceRenderer {
 
   drawRoad(race, road) {
     const context = this.context;
-    for (let index = ROAD_STEPS - 1; index >= 0; index -= 1) {
+    for (let index = road.length - 2; index >= 0; index -= 1) {
       const far = road[index + 1];
       const near = road[index];
-      const segment = segmentAt(race.track, race.player.distance + near.distance);
-      context.fillStyle = segment.stripe ? "#101d28" : "#0b1821";
+      const worldDistance = race.player.distance + (near.distance + far.distance) / 2;
+      const stripe = Math.floor(worldDistance / 10) % 2;
+      context.fillStyle = stripe ? "#17382e" : "#10291f";
       context.fillRect(0, far.y, VIEW.width, near.y - far.y + 1);
 
       context.beginPath();
@@ -132,7 +153,7 @@ export class RaceRenderer {
       context.lineTo(near.center + near.half, near.y);
       context.lineTo(near.center - near.half, near.y);
       context.closePath();
-      context.fillStyle = segment.stripe ? "#2b303d" : "#252b36";
+      context.fillStyle = stripe ? "#34394a" : "#2c3140";
       context.fill();
 
       const shoulderFar = Math.max(1, far.half * 0.055);
@@ -144,11 +165,11 @@ export class RaceRenderer {
         context.lineTo(near.center + side * (near.half - shoulderNear), near.y);
         context.lineTo(near.center + side * near.half, near.y);
         context.closePath();
-        context.fillStyle = segment.stripe ? "#f1eef2" : "#f04b45";
+        context.fillStyle = stripe ? "#fff4d9" : "#ed493e";
         context.fill();
       }
 
-      const laneStripe = Math.floor((race.player.distance + near.distance) / 18) % 4;
+      const laneStripe = Math.floor(worldDistance / 10) % 3;
       if (laneStripe < 2) {
         for (const lane of [-1 / 3, 1 / 3]) {
           context.beginPath();
@@ -179,10 +200,11 @@ export class RaceRenderer {
   }
 
   drawScenery(race, road) {
-    for (let distance = 640; distance >= 70; distance -= 58) {
-      const segment = segmentAt(race.track, race.player.distance + distance);
-      const side = segment.index % 2 ? -1 : 1;
-      const point = this.project(road, distance, side * 1.77);
+    for (const worldDistance of sceneryPositions(race.player.distance)) {
+      const distance = worldDistance - race.player.distance;
+      const segment = segmentAt(race.track, worldDistance);
+      const side = Math.floor(worldDistance / 28) % 2 ? -1 : 1;
+      const point = this.project(road, distance, side * 1.9);
       if (point.x < -35 || point.x > VIEW.width + 35) continue;
       if (segment.decor === "palms" || segment.decor === "bay") this.drawPalm(point.x, point.y, point.scale * 0.78);
       else if (segment.decor === "tunnel") this.drawLamp(point.x, point.y, point.scale);
@@ -274,7 +296,8 @@ export class RaceRenderer {
     const player = race.player;
     context.save();
     const shake = race.impactTimer > 0 ? (Math.random() - 0.5) * 5 : 0;
-    context.translate(VIEW.width / 2 + shake, 267 + shake);
+    const vibration = Math.sin(race.player.distance * 1.8) * Math.min(0.65, player.speed / 280);
+    context.translate(VIEW.width / 2 + shake, 267 + shake + vibration);
     if (this.assets.playerIndicator) {
       const crop = INDICATOR_CROPS.player;
       const width = 18;
