@@ -44,7 +44,7 @@ Os testes cobrem pista, física, largada, pausa, chegada, premiação e migraç�
 
 A referência de linguagem visual é Top Gear/Top Racer; esta implementação não inclui código, sprites ou músicas extraídos desses jogos. A abordagem pseudo-3D foi estudada nos [artigos de Jake Gordon](https://jakesgordon.com/writing/javascript-racer-v2-curves/) e no [JavaScript Racer](https://github.com/jakesgordon/javascript-racer). Os assets existentes do Rua Livre foram mantidos, e os efeitos e a trilha são gerados pelo código do projeto.
 
-Na branch `feat/motor-jake-gordon`, uma adaptação inicial do código MIT de projeção e geração de pista está isolada em `js/engines/jake-gordon.js`. O jogo ainda usa o renderizador anterior: a conexão com a corrida será a próxima etapa. Consulte o [estado da integração](docs/integracao-jake-gordon.md) e a [licença original](vendor/javascript-racer/LICENSE). Música e sprites do exemplo não foram importados.
+Na branch `feat/motor-jake-gordon`, a corrida usa a projeção, o acúmulo de curvas, o recorte de morros e o modelo de direção adaptados do código MIT de Jake Gordon. O adaptador em `js/engines/rua-livre-adapter.js` conecta esse motor aos nossos sprites e à pista de 1,68 km, sem alterar os saves ou a música. A indicação **MOTOR JAKE GORDON** aparece abaixo da pista. Consulte o [estado da integração](docs/integracao-jake-gordon.md) e a [licença original](vendor/javascript-racer/LICENSE). Música e sprites do exemplo não foram importados.
 
 ## Estrutura
 

@@ -1,19 +1,6 @@
 import { PLAYER_CARS, RACE_RULES, VIEW, clamp, mod } from "./config.js";
-import { curveAt, elevationAt, segmentAt } from "./track.js";
-
-const ROAD_SLICE = 5;
-const CAMERA_DEPTH = 40;
-
-export function roadHorizon(race) {
-  const grade = (elevationAt(race.track, race.player.distance + 60) - elevationAt(race.track, race.player.distance)) / 60;
-  return VIEW.horizon + grade * 42;
-}
-
-// Reciprocal depth makes nearby asphalt rush past while the horizon stays distant.
-export function roadPerspective(distance) {
-  const far = CAMERA_DEPTH / (CAMERA_DEPTH + RACE_RULES.visibleDistance);
-  return (CAMERA_DEPTH / (CAMERA_DEPTH + clamp(distance, 0, RACE_RULES.visibleDistance)) - far) / (1 - far);
-}
+import { segmentAt } from "./track.js";
+import { buildRoadFrame, projectEntity, roadHorizon, worldDistanceAt } from "./engines/rua-livre-adapter.js";
 
 export function sceneryPositions(playerDistance, spacing = 28) {
   const first = Math.floor(playerDistance / spacing) + 1;
@@ -82,51 +69,11 @@ export class RaceRenderer {
   }
 
   makeRoad(race) {
-    const points = [];
-    let heading = 0;
-    let bend = 0;
-    const distances = [0];
-    // Anchor polygon edges to the world, not the camera, for continuous scrolling.
-    for (let distance = ROAD_SLICE - mod(race.player.distance, ROAD_SLICE); distance < RACE_RULES.visibleDistance; distance += ROAD_SLICE) distances.push(distance);
-    distances.push(RACE_RULES.visibleDistance);
-    let previousDistance = 0;
-    const horizon = roadHorizon(race);
-    for (const distance of distances) {
-      const depth = distance / RACE_RULES.visibleDistance;
-      const perspective = roadPerspective(distance);
-      const step = distance - previousDistance;
-      heading += curveAt(race.track, race.player.distance + distance) * step * 0.022;
-      bend += heading * step;
-      previousDistance = distance;
-      const half = 13 + perspective * 274;
-      const cameraOffset = race.player.lateral * (half * 0.62 - 34);
-      const hill = (elevationAt(race.track, race.player.distance + distance) - elevationAt(race.track, race.player.distance)) * perspective * 0.7;
-      points.push({
-        distance,
-        depth,
-        y: horizon + perspective * (VIEW.roadBottom - horizon) - hill,
-        center: VIEW.width / 2 - cameraOffset + bend * CAMERA_DEPTH / (CAMERA_DEPTH + distance) * 1.1,
-        half,
-        scale: half / 287,
-      });
-    }
-    return points;
+    return buildRoadFrame(race);
   }
 
   project(road, distance, lane = 0) {
-    const clampedDistance = clamp(distance, 0, RACE_RULES.visibleDistance);
-    const upperIndex = Math.max(1, road.findIndex((point) => point.distance >= clampedDistance));
-    const lower = road[upperIndex - 1];
-    const upper = road[upperIndex];
-    const mix = (clampedDistance - lower.distance) / (upper.distance - lower.distance);
-    const center = lower.center + (upper.center - lower.center) * mix;
-    const half = lower.half + (upper.half - lower.half) * mix;
-    return {
-      x: center + lane * half * 0.62,
-      y: lower.y + (upper.y - lower.y) * mix,
-      half,
-      scale: half / 287,
-    };
+    return projectEntity(road, distance, lane);
   }
 
   drawBackground(race) {
@@ -157,31 +104,34 @@ export class RaceRenderer {
     const context = this.context;
     const pixel = VIEW.height / VIEW.pixelHeight;
     // One opaque strip per native pixel row: no antialiased green seams between polygons.
-    for (let y = Math.ceil(road.at(-1).y / pixel) * pixel; y < VIEW.height; y += pixel) {
-      const farIndex = road.findIndex((point) => point.y <= y);
-      if (farIndex < 1) continue;
-      const near = road[farIndex - 1];
-      const far = road[farIndex];
-      const mix = (y - near.y) / (far.y - near.y);
-      const center = near.center + (far.center - near.center) * mix;
-      const half = near.half + (far.half - near.half) * mix;
-      const worldDistance = race.player.distance + near.distance + (far.distance - near.distance) * mix;
-      const left = Math.floor((center - half) / pixel) * pixel;
-      const right = Math.ceil((center + half) / pixel) * pixel;
-      const stripe = Math.floor(worldDistance / 10) % 2;
-      context.fillStyle = stripe ? "#196344" : "#124c36";
-      context.fillRect(0, y, VIEW.width, pixel);
-      context.fillStyle = stripe ? "#fff4d9" : "#ed493e";
-      context.fillRect(left, y, right - left, pixel);
-      const shoulder = Math.max(pixel, Math.round(half * 0.075 / pixel) * pixel);
-      context.fillStyle = stripe ? "#66647c" : "#5b5970";
-      context.fillRect(left + shoulder, y, right - left - shoulder * 2, pixel);
-      const laneStripe = Math.floor(worldDistance / 10) % 3;
-      if (laneStripe < 2) {
-        context.fillStyle = "#e8edf5";
-        const width = Math.max(pixel, Math.round(half / 100) * pixel);
-        for (const lane of [-1 / 3, 1 / 3]) {
-          context.fillRect(Math.round((center + lane * half) / pixel) * pixel, y, width, pixel);
+    for (let index = 0; index < road.segments.length; index++) {
+      const segment = road.segments[index];
+      if (!segment.visible) continue;
+      const near = segment.p1;
+      const far = segment.p2;
+      const bottom = Math.min(VIEW.height, segment.clipY, near.y);
+      for (let y = Math.max(0, Math.ceil(far.y / pixel) * pixel); y < bottom; y += pixel) {
+        const mix = clamp((y - near.y) / (far.y - near.y), 0, 1);
+        const center = near.x + (far.x - near.x) * mix;
+        const half = near.half + (far.half - near.half) * mix;
+        const worldDistance = worldDistanceAt(road, index, mix);
+        const left = Math.floor((center - half) / pixel) * pixel;
+        const right = Math.ceil((center + half) / pixel) * pixel;
+        const stripe = Math.floor(worldDistance / 10) % 2;
+        context.fillStyle = stripe ? "#196344" : "#124c36";
+        context.fillRect(0, y, VIEW.width, pixel);
+        context.fillStyle = stripe ? "#fff4d9" : "#ed493e";
+        context.fillRect(left, y, right - left, pixel);
+        const shoulder = Math.max(pixel, Math.round(half * 0.075 / pixel) * pixel);
+        context.fillStyle = stripe ? "#66647c" : "#5b5970";
+        context.fillRect(left + shoulder, y, right - left - shoulder * 2, pixel);
+        const laneStripe = Math.floor(worldDistance / 10) % 3;
+        if (laneStripe < 2) {
+          context.fillStyle = "#e8edf5";
+          const width = Math.max(pixel, Math.round(half / 100) * pixel);
+          for (const lane of [-1 / 3, 1 / 3]) {
+            context.fillRect(Math.round((center + lane * half) / pixel) * pixel, y, width, pixel);
+          }
         }
       }
     }
@@ -193,6 +143,7 @@ export class RaceRenderer {
       const delta = race.track.length * lap - race.player.distance;
       if (delta <= 0 || delta >= RACE_RULES.visibleDistance) continue;
       const point = this.project(road, delta);
+      if (point.y > point.clipY) continue;
       const height = Math.max(1, point.scale * 8);
       const width = point.half * 2;
       const cell = width / 14;
@@ -210,11 +161,14 @@ export class RaceRenderer {
       const side = Math.floor(worldDistance / 28) % 2 ? -1 : 1;
       const point = this.project(road, distance, side * 1.9);
       if (point.x < -35 || point.x > VIEW.width + 35) continue;
+      const context = this.context;
+      context.save(); context.beginPath(); context.rect(0, 0, VIEW.width, Math.max(0, point.clipY)); context.clip();
       if (Math.abs(segment.curve) > 0.35 && Math.floor(worldDistance / 28) % 3 === 0) this.drawChevron(point.x, point.y, point.scale, Math.sign(segment.curve));
       else if (segment.decor === "palms" || segment.decor === "bay") this.drawPalm(point.x, point.y, point.scale * 1.3);
       else if (segment.decor === "tunnel") this.drawLamp(point.x, point.y, point.scale);
       else if (segment.index % 3 === 0) this.drawSign(point.x, point.y, point.scale, side);
       else this.drawLamp(point.x, point.y, point.scale);
+      context.restore();
     }
   }
 
@@ -271,7 +225,7 @@ export class RaceRenderer {
       context.drawImage(sheet, frame.x, frame.y, frame.width, frame.height, -size / 2, -size * 0.88, size, size);
       if (isRival && this.assets.rivalIndicator) {
         const crop = INDICATOR_CROPS.rival;
-      const width = Math.max(3, 11 * point.scale);
+        const width = Math.max(3, 11 * point.scale);
         const height = width * crop.height / crop.width;
         context.drawImage(this.assets.rivalIndicator, crop.x, crop.y, crop.width, crop.height, -width / 2, -size * 0.88 - height - Math.max(1, point.scale * 2), width, height);
       }
@@ -297,13 +251,16 @@ export class RaceRenderer {
     for (const item of visible) {
       if (item.delta < -1 || item.delta > RACE_RULES.visibleDistance) continue;
       const point = this.project(road, Math.max(0, item.delta), item.entity.lane);
-      point.y = Math.min(point.y, 263);
+      if (point.y - 72 * point.scale > point.clipY) continue;
+      this.context.save(); this.context.beginPath(); this.context.rect(0, 0, VIEW.width, Math.max(0, point.clipY)); this.context.clip();
       this.drawWorldCar(point, item.entity, item.rival);
+      this.context.restore();
     }
     for (const pickup of race.pickups) {
       const delta = pickup.distance - race.player.distance;
       if (pickup.collected || delta < 4 || delta > RACE_RULES.visibleDistance) continue;
       const point = this.project(road, delta, pickup.lane);
+      if (point.y > point.clipY) continue;
       const size = Math.max(2, 12 * point.scale);
       this.context.fillStyle = "#ff6a27"; this.context.fillRect(point.x - size / 2, point.y - size * 1.8, size, size * 1.8);
       this.context.fillStyle = "#fff16b"; this.context.fillRect(point.x - size * 0.18, point.y - size * 1.55, size * 0.36, size * 0.8);

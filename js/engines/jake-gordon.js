@@ -5,7 +5,7 @@
  *
  * ES module extraction, explicit state and near-plane handling by Rua Livre.
  * No DOM, audio, artwork, save data or global game loop is imported.
- * This is the integration foundation; the current renderer is still active.
+ * Used by rua-livre-adapter.js and the active race renderer.
  */
 export const interpolate = (a, b, percent) => a + (b - a) * percent;
 export const easeIn = (a, b, percent) => a + (b - a) * percent ** 2;
@@ -22,7 +22,7 @@ export function projectPoint(world, camera, viewport) {
   const scale = camera.depth / z;
   return {
     x: Math.round(viewport.width / 2 + scale * x * viewport.width / 2),
-    y: Math.round(viewport.height / 2 - scale * y * viewport.height / 2),
+    y: Math.round((viewport.horizon ?? viewport.height / 2) - scale * y * viewport.height / 2),
     half: Math.round(scale * viewport.roadWidth * viewport.width / 2),
     scale,
     cameraZ: z,
@@ -93,4 +93,10 @@ export function projectRoad(road, camera, viewport, drawDistance = 200) {
     if (visible) clipY = Math.min(clipY, p1.y);
   }
   return output;
+}
+
+/** Steering/centrifugal model adapted from update() in v4.final.html. */
+export function lateralStep(steer, speedRatio, curve, dt, grip = 1) {
+  const dx = dt * 2 * Math.max(0, speedRatio);
+  return steer * dx * grip - dx * speedRatio * curve * 0.3;
 }

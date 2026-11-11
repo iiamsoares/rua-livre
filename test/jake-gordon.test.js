@@ -1,9 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { addRoad, createRoad, elevationAt, projectPoint, projectRoad, segmentAt } from "../js/engines/jake-gordon.js";
+import { addRoad, createRoad, elevationAt, lateralStep, projectPoint, projectRoad, segmentAt } from "../js/engines/jake-gordon.js";
 
 const viewport = { width: 480, height: 270, roadWidth: 2000 };
 const camera = { x: 0, y: 1000, z: 0, depth: 1 / Math.tan(100 * Math.PI / 360) };
+
+test("a direção importada depende da velocidade e admite compensação da curva", () => {
+  assert.equal(lateralStep(1, 0, 1, 1 / 60), 0);
+  assert.equal(lateralStep(0, 1, 0, 1 / 60), 0);
+  assert.ok(lateralStep(0, 1, 1, 1 / 60) < 0);
+  assert.ok(lateralStep(1, 1, 1, 1 / 60) > 0);
+  assert.ok(Math.abs(lateralStep(0, 1, 1, 1 / 60)) > Math.abs(lateralStep(0, 0.5, 1, 1 / 60)));
+});
 
 test("motor importado projeta com perspectiva e rejeita o plano próximo", () => {
   assert.equal(projectPoint({ y: 0, z: 0 }, camera, viewport), null);

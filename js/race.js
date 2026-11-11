@@ -1,5 +1,6 @@
 import { CAR, POSITION_REWARDS, RACE_RULES, clamp, createRandom } from "./config.js";
 import { curveAt } from "./track.js";
+import { lateralStep } from "./engines/jake-gordon.js";
 
 const RIVAL_SPEEDS = [172, 164, 156];
 const RIVAL_COLORS = ["#ff4b4f", "#36a7ff", "#ffd43c"];
@@ -213,7 +214,6 @@ export function updateRace(race, input, dt) {
   player.collisionCooldown = Math.max(0, player.collisionCooldown - dt);
   const curve = curveAt(race.track, player.distance + 22);
   const speedRatio = player.speed / Math.max(1, race.stats.topSpeed);
-  const steering = input.steer * race.stats.steering * (0.28 + speedRatio * 0.72);
   player.drifting = Boolean(input.brake && input.steer && player.speed > 82);
   player.boosting = Boolean(input.nitro && player.nitro > 0 && player.speed > 55);
   player.steerVisual += (input.steer - player.steerVisual) * Math.min(1, dt * 9);
@@ -230,8 +230,7 @@ export function updateRace(race, input, dt) {
   const topSpeed = race.stats.topSpeed + (player.boosting ? CAR.nitroTopSpeed : 0);
   player.speed = clamp(player.speed, 0, topSpeed);
   const driftGrip = player.drifting ? 1.18 : 1;
-  player.lateral += steering * driftGrip * dt;
-  player.lateral -= curve * speedRatio * speedRatio * 0.38 * dt;
+  player.lateral += lateralStep(input.steer, speedRatio, curve, dt, race.stats.steering * driftGrip);
   player.heading += curve * player.speed / 3.6 * dt * 0.006;
 
   if (Math.abs(player.lateral) > 0.93) player.speed = Math.max(0, player.speed - 58 * dt);
