@@ -192,10 +192,12 @@ kbd { display: inline-grid; min-width: 31px; height: 29px; margin-right: 4px; pl
 .race-shell .hud-box.position strong { color: #ffe45e; }
 .race-shell .map-box { background: #151632b3; height: 62px; width: 98px; border: 2px solid #969ac3; }
 .race-shell .speedometer {
-  clip-path: none; width: 144px; height: 70px; left: 12px; bottom: 10px;
-  border: 2px solid #969ac3; padding: 6px 10px; background: #151632;
-  font-family: "Courier New", monospace; box-shadow: 3px 3px #070a14;
+  clip-path: none; width: clamp(96px, 15%, 174px); height: auto; aspect-ratio: 96 / 104; left: 12px; bottom: 10px;
+  border: 0; padding: 0; background: transparent;
+  font-family: "Courier New", monospace; box-shadow: none;
 }
+.speedometer canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.speedometer .speed-readout { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .race-shell .speedometer strong { font-family: inherit; font-size: clamp(30px, 4vw, 45px); font-style: normal; color: #fff; text-shadow: 2px 2px #53488e; }
 .race-shell .speedometer small { color: #ffeb71; font-weight: bold; }
 .race-shell .speedometer span { right: 9px; bottom: 9px; font-weight: bold; }

@@ -5,6 +5,7 @@ import { RaceRenderer, loadGameAssets } from "./renderer.js";
 import { carStats, createRace, updateRace } from "./race.js";
 import { clearSave, loadSave, writeSave } from "./storage.js";
 import { createRioTrack } from "./track.js";
+import { PixelSpeedometer } from "./speedometer.js";
 
 const element = (selector) => document.querySelector(selector);
 const elements = (selector) => [...document.querySelectorAll(selector)];
@@ -21,6 +22,7 @@ const track = createRioTrack();
 const audio = new GameAudio(save.audio);
 const assets = await loadGameAssets();
 const renderer = new RaceRenderer(element("#gameCanvas"), element("#mapCanvas"), assets);
+const speedometer = new PixelSpeedometer(element("#speedGauge"));
 renderer.setPlayerCar(save.carId);
 
 function showScreen(name) {
@@ -170,6 +172,7 @@ function updateHud() {
   element("#speedHud").textContent = Math.round(race.player.speed);
   const gear = race.player.speed < 5 ? "N" : Math.min(6, Math.max(1, Math.ceil(race.player.speed / 35)));
   element("#gearHud").textContent = gear;
+  speedometer.draw(race.player.speed, gear, race.player.boosting);
   element("#nitroBar").style.width = `${race.player.nitro}%`;
   element("#healthBar").style.width = `${race.player.health}%`;
 }
