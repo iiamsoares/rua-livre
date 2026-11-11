@@ -1,6 +1,6 @@
 import { PLAYER_CARS, RACE_RULES, VIEW, clamp, mod } from "./config.js";
 import { segmentAt } from "./track.js";
-import { buildRoadFrame, projectEntity, roadHorizon, worldDistanceAt } from "./engines/rua-livre-adapter.js";
+import { CAMERA, buildRoadFrame, projectEntity, roadHorizon, worldDistanceAt } from "./engines/rua-livre-adapter.js";
 
 export function sceneryPositions(playerDistance, spacing = 28) {
   const first = Math.floor(playerDistance / spacing) + 1;
@@ -274,6 +274,7 @@ export class RaceRenderer {
     const shake = race.impactTimer > 0 ? (Math.random() - 0.5) * 5 : 0;
     const vibration = Math.sin(race.player.distance * 1.8) * Math.min(0.65, player.speed / 280);
     context.translate(VIEW.width / 2 + player.lateral * 34 + shake, 267 + shake + vibration);
+    context.scale(CAMERA.zoom, CAMERA.zoom);
     if (this.assets.playerIndicator) {
       const crop = INDICATOR_CROPS.player;
       const width = 10;

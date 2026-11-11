@@ -4,7 +4,9 @@ import { createRoad, projectRoad, interpolate } from "./jake-gordon.js";
 
 // The simulation stays in metres and km/h. Only the renderer uses upstream units.
 export const ENGINE = Object.freeze({ unitsPerMetre: 100, segmentLength: 200, roadWidth: 2000, depth: 1 / Math.tan(100 * Math.PI / 360) });
-const NEAR_HALF = 287;
+export const CAMERA = Object.freeze({ zoom: 1.12 });
+const BASE_HALF = 287;
+const NEAR_HALF = BASE_HALF * CAMERA.zoom;
 const PLAYER_Z = ENGINE.depth * ENGINE.roadWidth * VIEW.width / 2 / NEAR_HALF;
 const tracks = new WeakMap();
 
@@ -62,7 +64,7 @@ export function projectEntity(frame, distance, lane = 0) {
     x: interpolate(segment.p1.x, segment.p2.x, mix) + lane * half * 0.62,
     y: interpolate(segment.p1.y, segment.p2.y, mix),
     half,
-    scale: half / NEAR_HALF,
+    scale: half / BASE_HALF,
     clipY: segment.clipY,
   };
 }

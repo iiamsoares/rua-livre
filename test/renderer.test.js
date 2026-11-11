@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { RaceRenderer, sceneryPositions } from "../js/renderer.js";
-import { ENGINE, engineTrack, roadHorizon } from "../js/engines/rua-livre-adapter.js";
+import { CAMERA, ENGINE, engineTrack, roadHorizon } from "../js/engines/rua-livre-adapter.js";
 import { createRioTrack } from "../js/track.js";
 import { VIEW } from "../js/config.js";
 
@@ -39,7 +39,7 @@ test("a malha tem profundidades ordenadas e projeções finitas em toda a volta"
     for (const delta of [-10, 0, 4.2, 40, 250, 500, 600]) {
       const point = renderer.project(road, delta, 0.62);
       assert.ok(Object.values(point).every(Number.isFinite));
-      assert.ok(point.scale > 0 && point.scale < 1.01);
+      assert.ok(point.scale > 0 && point.scale < CAMERA.zoom + 0.01);
     }
   }
 });
@@ -51,6 +51,16 @@ test("o motor mantém a distância da pista e reutiliza a geometria convertida",
   assert.equal(converted.segments.length, 840);
   assert.equal(engineTrack(track), converted);
   assert.ok(renderer.makeRoad(raceAt(0)).segments.length > 200);
+});
+
+test("a câmera aproxima pista e veículos na mesma proporção sem deslocar o jogador", () => {
+  const race = raceAt(0);
+  race.player.lateral = 0.62;
+  const point = renderer.project(renderer.makeRoad(race), 0, race.player.lateral);
+  assert.equal(CAMERA.zoom, 1.12);
+  assert.ok(Math.abs(point.scale - CAMERA.zoom) < 0.01);
+  assert.ok(Math.abs(point.x - (VIEW.width / 2 + race.player.lateral * 34)) < 2);
+  assert.ok(Math.abs(point.y - VIEW.roadBottom) < 3);
 });
 
 test("a câmera mostra curvas pronunciadas e variação de relevo", () => {
