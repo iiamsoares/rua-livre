@@ -243,6 +243,33 @@ export class RaceRenderer {
     context.restore();
   }
 
+  drawPotholes(race, road) {
+    const context = this.context;
+    // Project each edge onto the asphalt so holes follow slopes and curves.
+    const outline = [[-0.5, -1], [0.35, -1], [1, -0.45], [0.85, 0.6], [0.25, 1], [-0.65, 0.8], [-1, 0.15], [-0.85, -0.6]];
+    for (const pothole of [...race.potholes].reverse()) {
+      const delta = pothole.distance - race.player.distance;
+      if (delta < 0 || delta > RACE_RULES.visibleDistance - 2) continue;
+      const center = this.project(road, delta, pothole.lane);
+      if (center.y > center.clipY) continue;
+      context.save();
+      context.beginPath(); context.rect(0, 0, VIEW.width, Math.max(0, center.clipY)); context.clip();
+      for (const [size, color] of [[1.25, "#77706a"], [1, "#12131b"], [0.65, "#080a10"]]) {
+        context.fillStyle = color;
+        context.beginPath();
+        outline.forEach(([x, z], index) => {
+          const point = this.project(road, Math.max(0, delta + z * 1.5 * size), pothole.lane + x * 0.15 * size);
+          const px = Math.round(point.x / 1.5) * 1.5;
+          const py = Math.round(point.y / 1.5) * 1.5;
+          if (index === 0) context.moveTo(px, py);
+          else context.lineTo(px, py);
+        });
+        context.closePath(); context.fill();
+      }
+      context.restore();
+    }
+  }
+
   drawEntities(race, road) {
     const visible = [];
     for (const entity of race.traffic) visible.push({ entity, rival: false, delta: entity.distance - race.player.distance });
@@ -343,6 +370,7 @@ export class RaceRenderer {
     this.drawBackground(race);
     const road = this.makeRoad(race);
     this.drawRoad(race, road);
+    this.drawPotholes(race, road);
     this.drawScenery(race, road);
     this.drawEntities(race, road);
     this.drawPlayer(race);

@@ -8,6 +8,27 @@ import { VIEW } from "../js/config.js";
 const renderer = Object.create(RaceRenderer.prototype);
 const raceAt = (distance) => ({ track: createRioTrack(), player: { distance, lateral: 0 } });
 
+test("buracos são projetados no asfalto e recortados atrás de morros", () => {
+  const points = [];
+  let fills = 0;
+  const local = Object.create(RaceRenderer.prototype);
+  local.context = {
+    save() {}, restore() {}, beginPath() {}, rect() {}, clip() {}, closePath() {},
+    moveTo: (...point) => points.push(point), lineTo: (...point) => points.push(point),
+    fill: () => fills++,
+  };
+  const race = raceAt(0);
+  race.potholes = [{ distance: 30, lane: 0 }, { distance: -10, lane: 0 }, { distance: 600, lane: 0 }];
+  local.drawPotholes(race, local.makeRoad(race));
+  assert.equal(fills, 3);
+  assert.ok(points.every((point) => point.every(Number.isFinite)));
+  assert.ok(new Set(points.map((point) => point[1])).size > 1);
+  fills = 0;
+  local.project = () => ({ x: 240, y: 200, clipY: 100 });
+  local.drawPotholes(race, {});
+  assert.equal(fills, 0);
+});
+
 test("a projeção do motor acelera o movimento próximo à câmera", () => {
   const road = renderer.makeRoad(raceAt(0));
   const nearMotion = renderer.project(road, 10).half - renderer.project(road, 20).half;

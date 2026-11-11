@@ -52,6 +52,12 @@ export function createRace(save, track, seed = Date.now()) {
   for (let distance = 420, index = 0; distance < totalDistance; distance += 520, index += 1) {
     pickups.push({ distance, lane: [-0.62, 0, 0.62][index % 3], collected: false });
   }
+  const potholes = [];
+  for (let lap = 0; lap < RACE_RULES.laps; lap += 1) {
+    for (let distance = 220, index = 0; distance < track.length - 120; distance += 240, index += 1) {
+      potholes.push({ distance: lap * track.length + distance, lane: [0, -0.62, 0.62][index % 3], hit: false });
+    }
+  }
 
   return {
     seed,
@@ -88,6 +94,7 @@ export function createRace(save, track, seed = Date.now()) {
     rivals,
     traffic,
     pickups,
+    potholes,
   };
 }
 
@@ -170,6 +177,21 @@ function updateCollisions(race, events) {
   }
 }
 
+function updatePotholes(race, previousDistance, events) {
+  const player = race.player;
+  if (player.distance <= previousDistance) return;
+  for (const pothole of race.potholes) {
+    if (pothole.hit || pothole.distance < previousDistance || pothole.distance > player.distance) continue;
+    if (Math.abs(pothole.lane - player.lateral) >= 0.24) continue;
+    pothole.hit = true;
+    const damage = 6;
+    player.health = Math.max(0, player.health - damage);
+    player.collisions += 1;
+    race.impactTimer = 0.25;
+    events.push({ type: "pothole", damage });
+  }
+}
+
 function updatePosition(race) {
   if (race.finished && race.finishReason === "complete") return;
   race.position = 1 + race.rivals.filter((rival) => rival.distance > race.player.distance).length;
@@ -216,6 +238,7 @@ export function updateRace(race, input, dt) {
   race.elapsed += dt;
   race.impactTimer = Math.max(0, race.impactTimer - dt);
   const player = race.player;
+  const previousDistance = player.distance;
   player.collisionCooldown = Math.max(0, player.collisionCooldown - dt);
   const curve = curveAt(race.track, player.distance + 22);
   const speedRatio = player.speed / Math.max(1, race.stats.topSpeed);
@@ -254,6 +277,7 @@ export function updateRace(race, input, dt) {
   updateRivals(race, dt);
   updateTraffic(race, dt);
   updateCollisions(race, events);
+  updatePotholes(race, previousDistance, events);
   updatePosition(race);
 
   race.lap = Math.min(RACE_RULES.laps, Math.floor(player.distance / race.track.length) + 1);

@@ -160,6 +160,7 @@ function handleEvents(events) {
     if (event.type === "pickup") { showMessage("NITRO +", 520); audio.beep(590, 0.08, 0.045); }
     if (event.type === "collision") audio.beep(84, 0.2, 0.085, "sawtooth");
     if (event.type === "barrier") audio.beep(110, 0.12, 0.06, "sawtooth");
+    if (event.type === "pothole") { showMessage(`BURACO! −${event.damage}`, 650); audio.beep(65, 0.14, 0.07, "sawtooth"); }
     if (event.type === "finish") { audio.beep(event.won ? 880 : 150, 0.32, 0.075); storeResult(); }
   }
 }

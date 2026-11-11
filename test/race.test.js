@@ -5,6 +5,70 @@ import { createRioTrack, curveAt, elevationAt, segmentAt } from "../js/track.js"
 
 const idle = { accelerate: false, brake: false, steer: 0, nitro: false };
 
+function potholeRace() {
+  const race = createRace({ preparation: 1 }, createRioTrack(), 60);
+  race.countdown = 0;
+  race.rivals = [];
+  race.traffic = [];
+  race.potholes = [{ distance: 50, lane: 0, hit: false }];
+  race.player.distance = 49.5;
+  race.player.speed = 190;
+  return race;
+}
+
+test("buraco retira seis pontos uma única vez, mesmo durante o nitro", () => {
+  const race = potholeRace();
+  const events = updateRace(race, { ...idle, accelerate: true, nitro: true }, 1 / 60);
+  assert.equal(race.player.health, 94);
+  assert.equal(race.player.collisions, 1);
+  assert.ok(events.some((event) => event.type === "pothole" && event.damage === 6));
+  race.player.distance = 49.5;
+  updateRace(race, idle, 1 / 60);
+  assert.equal(race.player.health, 94);
+});
+
+test("desviar do buraco preserva a integridade", () => {
+  const race = potholeRace();
+  race.player.lateral = 0.62;
+  updateRace(race, idle, 1 / 60);
+  assert.equal(race.player.health, 100);
+  assert.equal(race.player.collisions, 0);
+});
+
+test("buraco não causa dano parado, pausado ou durante a contagem", () => {
+  for (const mode of ["stopped", "paused", "countdown"]) {
+    const race = potholeRace();
+    race.player.distance = 50;
+    if (mode === "stopped") race.player.speed = 0;
+    if (mode === "paused") race.paused = true;
+    if (mode === "countdown") race.countdown = 3;
+    updateRace(race, idle, 1 / 60);
+    assert.equal(race.player.health, 100);
+  }
+});
+
+test("dano do buraco pode encerrar a corrida sem integridade negativa", () => {
+  const race = potholeRace();
+  race.player.health = 4;
+  const events = updateRace(race, idle, 1 / 60);
+  assert.equal(race.player.health, 0);
+  assert.equal(race.finishReason, "wrecked");
+  assert.ok(events.some((event) => event.type === "finish"));
+});
+
+test("buracos se repetem nas três voltas e reiniciam em uma nova corrida", () => {
+  const track = createRioTrack();
+  const race = createRace({ preparation: 1 }, track, 60);
+  const firstLap = race.potholes.filter((hole) => hole.distance < track.length);
+  assert.equal(firstLap.length, 6);
+  assert.equal(race.potholes.length, 18);
+  for (const hole of firstLap) {
+    assert.ok(race.potholes.some((other) => other.distance === hole.distance + track.length && other.lane === hole.lane));
+  }
+  race.potholes[0].hit = true;
+  assert.ok(createRace({ preparation: 1 }, track, 60).potholes.every((hole) => !hole.hit));
+});
+
 test("a pista possui 1,68 km e segmentos navegáveis em loop", () => {
   const track = createRioTrack();
   assert.equal(track.segments.length, 120);
@@ -174,6 +238,7 @@ test("a corrida ainda permite completar três voltas com o novo controle", () =>
   race.countdown = 0;
   race.traffic = [];
   race.rivals = [];
+  race.potholes = [];
   for (let frame = 0; frame < 60 * 120 && !race.finished; frame++) {
     const steer = Math.abs(race.player.lateral) > 0.03 ? -Math.sign(race.player.lateral) : 0;
     updateRace(race, { ...idle, accelerate: true, steer }, 1 / 60);
