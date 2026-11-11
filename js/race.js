@@ -7,6 +7,7 @@ const RIVAL_COLORS = ["#ff4b4f", "#36a7ff", "#ffd43c"];
 const TRAFFIC_COLORS = ["#e64950", "#268cd7", "#e7b82b", "#774fc4", "#43ad72", "#dedfe5"];
 const RIVAL_SPRITES = [1, 2, 4];
 const TRAFFIC_SPRITES = [5, 7, 8, 10, 11, 12, 13, 15];
+const TRAFFIC_SPEEDS = [60, 85, 110, 135];
 
 export function carStats(preparation = 1) {
   const level = clamp(Math.floor(preparation), 1, 3);
@@ -17,11 +18,11 @@ export function carStats(preparation = 1) {
   };
 }
 
-function makeTraffic(random, distance) {
+function makeTraffic(random, distance, profile = Math.floor(random() * TRAFFIC_SPEEDS.length)) {
   return {
     distance,
     lane: [-0.62, 0, 0.62][Math.floor(random() * 3)],
-    speed: 72 + random() * 38,
+    speed: TRAFFIC_SPEEDS[profile % TRAFFIC_SPEEDS.length] + random() * 12,
     color: TRAFFIC_COLORS[Math.floor(random() * TRAFFIC_COLORS.length)],
     spriteIndex: TRAFFIC_SPRITES[Math.floor(random() * TRAFFIC_SPRITES.length)],
     kind: random() < 0.2 ? "van" : "car",
@@ -46,7 +47,7 @@ export function createRace(save, track, seed = Date.now()) {
     playerContact: false,
     finishedAt: null,
   }));
-  const traffic = Array.from({ length: 5 }, (_, index) => makeTraffic(random, 180 + index * 130 + random() * 55));
+  const traffic = Array.from({ length: RACE_RULES.trafficCars }, (_, index) => makeTraffic(random, 120 + index * 42 + random() * 16, index));
   const pickups = [];
   for (let distance = 420, index = 0; distance < totalDistance; distance += 520, index += 1) {
     pickups.push({ distance, lane: [-0.62, 0, 0.62][index % 3], collected: false });
@@ -115,7 +116,11 @@ function updateTraffic(race, dt) {
     traffic.distance += traffic.speed / 3.6 * dt;
     traffic.hitTimer = Math.max(0, traffic.hitTimer - dt);
     if (traffic.distance < race.player.distance - 65) {
-      const replacement = makeTraffic(race.random, race.player.distance + 580 + race.random() * 440);
+      const replacement = makeTraffic(race.random, race.player.distance + RACE_RULES.visibleDistance + 30 + race.random() * 100);
+      // Reinsert outside the camera and avoid spawning on another civilian car.
+      while (race.traffic.some((other) => other !== traffic && Math.abs(other.lane - replacement.lane) < 0.25 && Math.abs(other.distance - replacement.distance) < 24)) {
+        replacement.distance += 24;
+      }
       Object.assign(traffic, replacement);
     }
   }

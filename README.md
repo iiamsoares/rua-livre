@@ -38,6 +38,7 @@ Os testes cobrem pista, física, largada, pausa, chegada, premiação e migraç�
 - Curvas interpoladas, relevo suave e skyline com deslocamento ligado às curvas. A câmera permite movimento lateral do carro.
 - HUD de alto contraste, zebras largas, placas de curva, palmeiras e efeitos de derrapagem/nitro.
 - Três rivais com aceleração de largada; aceleração e direção do jogador mais rápidas. Carros, garagem, colisões e saves preservados.
+- Trânsito civil com 12 veículos, separado dos três rivais, com velocidades entre 60 e 147 km/h. Os carros ultrapassados reaparecem além da câmera, com espaçamento de entrada na mesma faixa.
 - Trilha sintetizada original em quatro compassos, com baixo, melodia e pulso rítmico. O botão SOM controla música e efeitos; a pausa silencia ambos.
 
 ### Referências e materiais

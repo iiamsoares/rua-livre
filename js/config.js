@@ -6,6 +6,7 @@ export const RACE_RULES = Object.freeze({
   visibleDistance: 500,
   podiumSize: 3,
   opponents: 3,
+  trafficCars: 12,
 });
 
 export const CAR = Object.freeze({

@@ -48,6 +48,45 @@ test("uma corrida pausada não altera o estado", () => {
   assert.equal(race.player.speed, 0);
 });
 
+test("o trânsito tem doze carros com velocidades variadas sem aumentar os rivais", () => {
+  const race = createRace({ preparation: 1 }, createRioTrack(), 50);
+  assert.equal(race.rivals.length, 3);
+  assert.equal(race.position, 4);
+  assert.equal(race.traffic.length, 12);
+  assert.ok(race.traffic.filter((car) => car.distance <= 500).length >= 8);
+  assert.ok(race.traffic.every((car) => car.speed >= 60 && car.speed < 147));
+  assert.ok(new Set(race.traffic.map((car) => Math.floor(car.speed / 25))).size >= 4);
+  assert.ok(Math.max(...race.traffic.map((car) => car.speed)) - Math.min(...race.traffic.map((car) => car.speed)) > 65);
+});
+
+test("carros civis percorrem distâncias diferentes e não contam para a classificação", () => {
+  const race = createRace({ preparation: 1 }, createRioTrack(), 51);
+  race.countdown = 0;
+  const before = race.traffic.map((car) => car.distance);
+  updateRace(race, idle, 1 / 60);
+  race.traffic.forEach((car, index) => {
+    assert.ok(Math.abs(car.distance - before[index] - car.speed / 3.6 / 60) < 0.00001);
+  });
+  assert.equal(race.position, 4);
+});
+
+test("o trânsito reaparece fora da câmera sem sobrepor carros na mesma faixa", () => {
+  const race = createRace({ preparation: 1 }, createRioTrack(), 52);
+  race.countdown = 0;
+  race.player.distance = 1000;
+  race.traffic.forEach((car) => { car.distance = 0; });
+  updateRace(race, idle, 1 / 60);
+  assert.equal(race.traffic.length, 12);
+  assert.ok(race.traffic.every((car) => car.distance > race.player.distance + 500 && car.speed >= 60 && car.speed < 147));
+  for (let i = 0; i < race.traffic.length; i++) {
+    for (let j = i + 1; j < race.traffic.length; j++) {
+      const a = race.traffic[i];
+      const b = race.traffic[j];
+      if (a.lane === b.lane) assert.ok(Math.abs(a.distance - b.distance) > 23);
+    }
+  }
+});
+
 test("o jogador não atravessa um veículo na mesma faixa", () => {
   const race = createRace({ preparation: 1 }, createRioTrack(), 30);
   race.countdown = 0;
