@@ -6,7 +6,7 @@ export class InputController {
     this.onPause = onPause;
     this.onKeyDown = (event) => {
       const key = event.key.toLowerCase();
-      if (CONTROL_KEYS.has(key)) event.preventDefault();
+      if (CONTROL_KEYS.has(key) || (key === "enter" && this.multiplayer)) event.preventDefault();
       if ((key === "p" || key === "escape") && !event.repeat) this.onPause();
       this.keys.add(key);
     };
@@ -17,7 +17,11 @@ export class InputController {
     addEventListener("blur", this.onBlur);
   }
 
-  snapshot() {
+  snapshot(player = 0) {
+    if (player) {
+      const [up, down, left, right, nitro] = player === 1 ? ["w", "s", "a", "d", " "] : ["arrowup", "arrowdown", "arrowleft", "arrowright", "enter"];
+      return { accelerate: this.keys.has(up), brake: this.keys.has(down), steer: Number(this.keys.has(right)) - Number(this.keys.has(left)), nitro: this.keys.has(nitro) };
+    }
     return {
       accelerate: this.keys.has("arrowup") || this.keys.has("w"),
       brake: this.keys.has("arrowdown") || this.keys.has("s"),

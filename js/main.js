@@ -6,6 +6,7 @@ import { carStats, createRace, updateRace } from "./race.js";
 import { clearSave, loadSave, writeSave } from "./storage.js";
 import { createRioTrack } from "./track.js";
 import { PixelSpeedometer } from "./speedometer.js";
+import { createVersus, updateVersus } from "./versus.js";
 
 const element = (selector) => document.querySelector(selector);
 const elements = (selector) => [...document.querySelectorAll(selector)];
@@ -17,12 +18,35 @@ let race = null;
 let accumulator = 0;
 let messageTimer = 0;
 let resultStored = false;
+let versus = null;
+let localMode = false;
 
 const track = createRioTrack();
 const audio = new GameAudio(save.audio);
 const assets = await loadGameAssets();
+const shell = element(".race-shell");
+const firstView = document.createElement("div");
+firstView.className = "race-view";
+for (const child of [...shell.children].slice(0, 5)) firstView.append(child);
+shell.prepend(firstView);
+const secondView = firstView.cloneNode(true);
+secondView.querySelectorAll("[id]").forEach((node) => { node.id += "Two"; });
+secondView.classList.add("second-view");
+firstView.after(secondView);
+for (const [index, view] of [firstView, secondView].entries()) {
+  const label = document.createElement("span");
+  label.className = "player-label";
+  label.textContent = `JOGADOR ${index + 1}`;
+  view.append(label);
+}
+PLAYER_CARS.forEach((car, index) => {
+  const option = new Option(car.name, car.id, false, index === 1);
+  element("#playerTwoCar").append(option);
+});
 const renderer = new RaceRenderer(element("#gameCanvas"), element("#mapCanvas"), assets);
 const speedometer = new PixelSpeedometer(element("#speedGauge"));
+const rendererTwo = new RaceRenderer(element("#gameCanvasTwo"), element("#mapCanvasTwo"), assets);
+const speedometerTwo = new PixelSpeedometer(element("#speedGaugeTwo"));
 renderer.setPlayerCar(save.carId);
 
 function showScreen(name) {
@@ -116,6 +140,14 @@ function startRace() {
   audio.unlock();
   input.clear();
   race = createRace(save, track, Math.floor(performance.now() * 1000));
+  versus = localMode ? createVersus(save, track, race.seed, [save.carId, element("#playerTwoCar").value]) : null;
+  if (versus) race = versus.races[0];
+  shell.classList.toggle("split", localMode);
+  input.multiplayer = localMode;
+  renderer.spriteHeightScale = localMode ? 2 : 1;
+  rendererTwo.spriteHeightScale = 2;
+  element(".controls-strip").textContent = localMode ? "J1: WASD · ESPAÇO NITRO     |     J2: SETAS · ENTER NITRO     |     P / ESC PAUSAR" : "↑ / W ACELERAR · ↓ / S FREAR · ← → / A D VIRAR · ESPAÇO / SHIFT NITRO · P / ESC PAUSAR";
+  rendererTwo.setPlayerCar(element("#playerTwoCar").value);
   resultStored = false;
   accumulator = 0;
   renderer.setPlayerCar(save.carId);
@@ -130,6 +162,7 @@ function startRace() {
 function togglePause(force) {
   if (!race || race.finished || activeScreen !== "race") return;
   race.paused = typeof force === "boolean" ? force : !race.paused;
+  if (versus) versus.races[1].paused = race.paused;
   input.clear();
   element("#pauseOverlay").classList.toggle("hidden", !race.paused);
 }
@@ -137,6 +170,15 @@ function togglePause(force) {
 function storeResult() {
   if (!race || resultStored) return;
   resultStored = true;
+  if (versus) {
+    element("#resultTitle").textContent = versus.winner === null ? "EMPATE!" : `JOGADOR ${versus.winner + 1} VENCEU!`;
+    element("#resultPosition").textContent = versus.winner === null ? "=" : `J${versus.winner + 1}`;
+    element("#resultTime").textContent = formatTime(race.elapsed);
+    element("#resultReward").textContent = "AMISTOSO";
+    element("#resultClean").textContent = "—";
+    element("#resultOverlay").classList.remove("hidden");
+    return;
+  }
   save.credits += race.reward;
   if (race.finishReason === "complete") {
     if (save.bestPosition == null || race.position < save.bestPosition) save.bestPosition = race.position;
@@ -165,24 +207,25 @@ function handleEvents(events) {
   }
 }
 
-function updateHud() {
-  if (!race) return;
-  element("#positionHud").innerHTML = `${race.position}<em>/${RACE_RULES.opponents + 1}</em>`;
-  element("#lapHud").textContent = `${race.lap}/${RACE_RULES.laps}`;
-  element("#timeHud").textContent = formatTime(race.elapsed);
-  element("#speedHud").textContent = Math.round(race.player.speed);
-  const gear = race.player.speed < 5 ? "N" : Math.min(6, Math.max(1, Math.ceil(race.player.speed / 35)));
-  element("#gearHud").textContent = gear;
-  speedometer.draw(race.player.speed, gear, race.player.boosting);
-  element("#nitroBar").style.width = `${race.player.nitro}%`;
-  element("#healthBar").style.width = `${race.player.health}%`;
+function updateHud(current = race, suffix = "", gauge = speedometer) {
+  if (!current) return;
+  element(`#positionHud${suffix}`).innerHTML = `${current.position}<em>/${RACE_RULES.opponents + (versus ? 2 : 1)}</em>`;
+  element(`#lapHud${suffix}`).textContent = `${current.lap}/${RACE_RULES.laps}`;
+  element(`#timeHud${suffix}`).textContent = formatTime(current.elapsed);
+  element(`#speedHud${suffix}`).textContent = Math.round(current.player.speed);
+  const gear = current.player.speed < 5 ? "N" : Math.min(6, Math.max(1, Math.ceil(current.player.speed / 35)));
+  element(`#gearHud${suffix}`).textContent = gear;
+  gauge.draw(current.player.speed, gear, current.player.boosting);
+  element(`#nitroBar${suffix}`).style.width = `${current.player.nitro}%`;
+  element(`#healthBar${suffix}`).style.width = `${current.player.health}%`;
 }
 
 const input = new InputController(() => togglePause());
 
 elements("[data-screen]").forEach((button) => button.addEventListener("click", () => showScreen(button.dataset.screen)));
 element("#playButton").addEventListener("click", () => { audio.unlock(); showScreen("garage"); });
-element("#raceButton").addEventListener("click", startRace);
+element("#raceButton").addEventListener("click", () => { localMode = false; startRace(); });
+element("#versusButton").addEventListener("click", () => { localMode = true; startRace(); });
 element("#pauseButton").addEventListener("click", () => togglePause(true));
 element("#resumeButton").addEventListener("click", () => togglePause(false));
 element("#restartButton").addEventListener("click", startRace);
@@ -230,12 +273,20 @@ function frame(now) {
     if (!race.paused && !race.finished) {
       accumulator += delta;
       while (accumulator >= RACE_RULES.fixedStep) {
-        handleEvents(updateRace(race, input.snapshot(), RACE_RULES.fixedStep));
+        if (versus) {
+          const events = updateVersus(versus, [input.snapshot(1), input.snapshot(2)], RACE_RULES.fixedStep);
+          events.forEach((list, index) => handleEvents(list.filter((event) => event.type !== "finish" && (index === 0 || !["countdown", "go"].includes(event.type)))));
+          if (versus.finished) storeResult();
+        } else handleEvents(updateRace(race, input.snapshot(), RACE_RULES.fixedStep));
         accumulator -= RACE_RULES.fixedStep;
         if (race.finished) break;
       }
     }
     renderer.render(race);
+    if (versus) {
+      rendererTwo.render(versus.races[1]);
+      updateHud(versus.races[1], "Two", speedometerTwo);
+    }
     updateHud();
     audio.update(race.player.speed, !race.paused && !race.finished && race.countdown === 0);
   }

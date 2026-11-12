@@ -274,13 +274,25 @@ export class RaceRenderer {
     const visible = [];
     for (const entity of race.traffic) visible.push({ entity, rival: false, delta: entity.distance - race.player.distance });
     for (const entity of race.rivals) visible.push({ entity, rival: true, delta: entity.distance - race.player.distance });
+    for (const entity of race.peers || []) visible.push({ entity, rival: false, delta: entity.distance - race.player.distance });
     visible.sort((a, b) => b.delta - a.delta);
     for (const item of visible) {
       if (item.delta < -1 || item.delta > RACE_RULES.visibleDistance) continue;
       const point = this.project(road, Math.max(0, item.delta), item.entity.lane);
       if (point.y - 72 * point.scale > point.clipY) continue;
       this.context.save(); this.context.beginPath(); this.context.rect(0, 0, VIEW.width, Math.max(0, point.clipY)); this.context.clip();
-      this.drawWorldCar(point, item.entity, item.rival);
+      this.context.translate(point.x, point.y);
+      this.context.scale(1, this.spriteHeightScale || 1);
+      this.context.translate(-point.x, -point.y);
+      if (item.entity.carId) {
+        const car = PLAYER_CARS.find((car) => car.id === item.entity.carId) || PLAYER_CARS[0];
+        const sheet = this.assets.playerCars[car.id];
+        if (sheet) {
+          const frame = spriteCell(sheet, car.spriteRows === 3 ? 6 : 10, null, car.spriteRows);
+          const size = 64 * point.scale;
+          this.context.drawImage(sheet, frame.x, frame.y, frame.width, frame.height, point.x - size / 2, point.y - size, size, size);
+        }
+      } else this.drawWorldCar(point, item.entity, item.rival);
       this.context.restore();
     }
     for (const pickup of race.pickups) {
@@ -301,7 +313,7 @@ export class RaceRenderer {
     const shake = race.impactTimer > 0 ? (Math.random() - 0.5) * 5 : 0;
     const vibration = Math.sin(race.player.distance * 1.8) * Math.min(0.65, player.speed / 280);
     context.translate(VIEW.width / 2 + player.lateral * 34 + shake, 267 + shake + vibration);
-    context.scale(CAMERA.zoom, CAMERA.zoom);
+    context.scale(CAMERA.zoom, CAMERA.zoom * (this.spriteHeightScale || 1));
     if (this.assets.playerIndicator) {
       const crop = INDICATOR_CROPS.player;
       const width = 10;

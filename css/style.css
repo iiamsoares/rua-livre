@@ -125,7 +125,13 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
 
 .race-screen { padding: 18px 18px 35px; background: radial-gradient(circle at top, #20254d, #070910 65%); }
 .race-shell { position: relative; width: min(1280px, calc((100vh - 155px) * 16 / 9), 100%); margin: auto; overflow: hidden; border: 2px solid #3c4770; background: #060810; box-shadow: 0 24px 80px #000c; aspect-ratio: 16 / 9; }
-#gameCanvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+#gameCanvas, #gameCanvasTwo { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.race-view { position: relative; width: 100%; height: 100%; }
+.second-view, .player-label { display: none; }
+.split .race-view { height: 50%; }
+.split .second-view { display: block; border-top: 6px solid #080a18; }
+.split .player-label { display: block; position: absolute; left: 50%; bottom: 5px; transform: translateX(-50%); color: #ffe45e; background: #101222cc; padding: 3px 8px; font: bold 11px monospace; }
+#playerTwoCar { display: block; width: 100%; margin: 8px 0; padding: 10px; color: #fff; background: #151632; border: 1px solid #969ac3; }
 .hud { position: absolute; inset: 14px 14px auto; display: flex; align-items: flex-start; gap: 8px; pointer-events: none; }
 .hud-box, .map-box { border: 2px solid #55608c; background: #080b19dc; box-shadow: 4px 4px 0 #03040a99; transform: skew(-3deg); }
 .hud-box { min-width: 92px; padding: 7px 12px; }
@@ -249,3 +255,13 @@ kbd { display: inline-grid; min-width: 31px; height: 29px; margin-right: 4px; pl
   .race-shell .speedometer { left: 5px; bottom: 5px; }
   .race-shell .nitro-hud { right: 5px; bottom: 5px; width: 27%; }
 }
+
+.race-shell.split .speedometer { width: 70px; bottom: 4px; transform: none; }
+.race-shell.split .hud { inset: 3px 5px auto; }
+.race-shell.split .hud-box strong { font-size: 19px; }
+.race-shell.split .hud-box small { font-size: 9px; }
+.race-shell.split .map-box { height: 38px; width: 62px; min-width: 62px; }
+.race-shell.split .map-box canvas { width: 100%; height: 100%; }
+.race-shell.split .nitro-hud, .race-shell.split .health-hud { display: block; padding: 3px 6px; width: 22%; bottom: 4px; }
+.race-shell.split .health-hud { bottom: 38px; }
+.race-shell.split .pause-button { top: calc(50% - 14px); z-index: 5; width: 28px; height: 28px; }

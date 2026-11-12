@@ -22,6 +22,12 @@ Depois, abra `http://127.0.0.1:4173`. Também é possível usar `npm.cmd run dev
 
 ## Objetivo
 
+### Versus local com tela dividida
+
+Na garagem, escolha o carro principal, o carro do jogador 2 e pressione **VERSUS LOCAL · 2 JOGADORES**. O jogador 1 ocupa a metade superior (WASD e Espaço para nitro); o jogador 2 ocupa a inferior (setas e Enter para nitro). P ou Esc pausa a partida inteira.
+
+Os dois disputam na mesma pista com três rivais e trânsito compartilhado, câmeras independentes e colisões entre os jogadores. Nitro, integridade, itens e impactos em buracos são individuais. Ambos usam o mesmo estágio de preparação. Vence quem completar primeiro as três voltas ou sobreviver à perda de integridade do adversário; chegadas no mesmo passo de simulação empatam. O amistoso não altera créditos nem recordes do modo solo.
+
 Escolha entre UP TSI, Chevette e Vectra GLS, complete três voltas e termine entre os três primeiros. O prêmio da corrida pode ser usado para evoluir a preparação do carro. Uma corrida sem colisões recebe bônus adicional.
 
 ## Testes

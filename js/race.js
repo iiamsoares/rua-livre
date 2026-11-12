@@ -78,6 +78,7 @@ export function createRace(save, track, seed = Date.now()) {
     reward: 0,
     cleanBonus: 0,
     impactTimer: 0,
+    contacts: new WeakMap(),
     player: {
       distance: 0,
       lateral: 0,
@@ -138,12 +139,12 @@ function collide(race, obstacle, damage, events) {
   const delta = obstacle.distance - player.distance;
   const touching = delta > -1 && delta < 6.2 && Math.abs(obstacle.lane - player.lateral) < 0.25;
   if (!touching) {
-    obstacle.playerContact = false;
+    race.contacts.set(obstacle, false);
     return;
   }
 
-  const firstContact = !obstacle.playerContact;
-  obstacle.playerContact = true;
+  const firstContact = !race.contacts.get(obstacle);
+  race.contacts.set(obstacle, true);
   const safeGap = 4.2;
   if (delta < safeGap) {
     player.distance = Math.max(0, obstacle.distance - safeGap);
@@ -162,6 +163,7 @@ function collide(race, obstacle, damage, events) {
 }
 
 function updateCollisions(race, events) {
+  for (const peer of race.peers || []) collide(race, peer, 8, events);
   for (const traffic of race.traffic) collide(race, traffic, traffic.kind === "van" ? 16 : 12, events);
   for (const rival of race.rivals) {
     if (rival.distance < race.totalDistance) collide(race, rival, 8, events);
@@ -220,7 +222,7 @@ function finishRace(race, reason, events) {
   events.push({ type: "finish", won: race.won, reason });
 }
 
-export function updateRace(race, input, dt) {
+export function updateRace(race, input, dt, updateWorld = true) {
   const events = [];
   if (race.paused || race.finished) return events;
 
@@ -274,8 +276,10 @@ export function updateRace(race, input, dt) {
   player.lateral = clamp(player.lateral, -1.2, 1.2);
   player.distance += player.speed / 3.6 * dt;
 
-  updateRivals(race, dt);
-  updateTraffic(race, dt);
+  if (updateWorld) {
+    updateRivals(race, dt);
+    updateTraffic(race, dt);
+  }
   updateCollisions(race, events);
   updatePotholes(race, previousDistance, events);
   updatePosition(race);
