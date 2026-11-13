@@ -28,3 +28,17 @@ test("o velocímetro desenha pixels inteiros e atualiza velocidade, marcha e nit
   assert.equal(clears, 4);
   assert.equal(ctx.imageSmoothingEnabled, false);
 });
+
+test("o novo mostrador recebe ponteiro e números dinâmicos", () => {
+  let faces = 0;
+  let pixels = 0;
+  const ctx = {
+    clearRect() {},
+    drawImage: () => { faces++; },
+    fillRect(...values) { pixels++; assert.ok(values.every(Number.isInteger)); },
+  };
+  const gauge = new PixelSpeedometer({ getContext: () => ctx }, {});
+  gauge.draw(142, 5, true);
+  assert.equal(faces, 1);
+  assert.ok(pixels > 40);
+});

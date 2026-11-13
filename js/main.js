@@ -42,9 +42,9 @@ for (const [index, view] of [firstView, secondView].entries()) {
   view.append(label);
 }
 const renderer = new RaceRenderer(element("#gameCanvas"), element("#mapCanvas"), assets);
-const speedometer = new PixelSpeedometer(element("#speedGauge"));
+const speedometer = new PixelSpeedometer(element("#speedGauge"), assets.speedometerFace);
 const rendererTwo = new RaceRenderer(element("#gameCanvasTwo"), element("#mapCanvasTwo"), assets);
-const speedometerTwo = new PixelSpeedometer(element("#speedGaugeTwo"));
+const speedometerTwo = new PixelSpeedometer(element("#speedGaugeTwo"), assets.speedometerFace);
 renderer.setPlayerCar(save.carId);
 
 function showScreen(name) {
@@ -161,8 +161,8 @@ function updateHud(current = race, suffix = "", gauge = speedometer) {
   const gear = current.player.speed < 5 ? "N" : Math.min(6, Math.max(1, Math.ceil(current.player.speed / 35)));
   element(`#gearHud${suffix}`).textContent = gear;
   gauge.draw(current.player.speed, gear, current.player.boosting);
-  element(`#nitroBar${suffix}`).style.width = `${current.player.nitro}%`;
-  element(`#healthBar${suffix}`).style.width = `${current.player.health}%`;
+  element(`#nitroBar${suffix}`).style.width = `${100 - current.player.nitro}%`;
+  element(`#healthBar${suffix}`).style.width = `${100 - current.player.health}%`;
 }
 
 const input = new InputController(() => togglePause());

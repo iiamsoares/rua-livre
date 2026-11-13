@@ -29,6 +29,84 @@ test("buracos são projetados no asfalto e recortados atrás de morros", () => {
   assert.equal(fills, 0);
 });
 
+test("o sprite de buraco substitui o desenho procedural sem alterar a projeção", () => {
+  let draws = 0;
+  const local = Object.create(RaceRenderer.prototype);
+  local.assets = { pothole: {} };
+  local.context = {
+    save() {}, restore() {}, beginPath() {}, rect() {}, clip() {},
+    drawImage: (...values) => { draws++; assert.ok(values.slice(1).every(Number.isFinite)); },
+  };
+  const race = raceAt(0);
+  race.potholes = [{ distance: 35, lane: 0, hit: false }];
+  local.drawPotholes(race, local.makeRoad(race));
+  assert.equal(draws, 1);
+});
+
+test("pétalas usam a zona dos ipês e permanecem ancoradas à pista", () => {
+  let draws = 0;
+  const local = Object.create(RaceRenderer.prototype);
+  local.assets = { petals: {} };
+  local.context = {
+    save() {}, restore() {}, beginPath() {}, rect() {}, clip() {},
+    drawImage: () => { draws++; },
+  };
+  local.project = (_road, distance, lane) => ({ x: 240 + lane * 10, y: 90 + distance * 0.2, clipY: 270, scale: 0.5 });
+  const track = createBrasiliaTrack();
+  local.drawEnvironmentalParticles({ track, elapsed: 2, player: { distance: track.length * 0.25 } }, {});
+  assert.ok(draws > 0);
+  draws = 0;
+  local.drawEnvironmentalParticles({ track, elapsed: 2, player: { distance: track.length * 0.05 } }, {});
+  assert.equal(draws, 0);
+});
+
+test("o minimapa novo mantém um marcador dinâmico", () => {
+  let images = 0;
+  let markers = 0;
+  const local = Object.create(RaceRenderer.prototype);
+  local.assets = { miniMap: {} };
+  local.mapCanvas = { width: 96, height: 96 };
+  local.mapContext = {
+    clearRect() {}, drawImage: () => { images++; }, beginPath() {},
+    arc: (...values) => { markers++; assert.ok(values.every(Number.isFinite)); },
+    fill() {}, fillRect() {},
+  };
+  const track = createBrasiliaTrack();
+  local.drawMap({ track, player: { distance: track.length * 0.5 } });
+  assert.equal(images, 1);
+  assert.equal(markers, 1);
+});
+
+test("o coletável de turbo usa a garrafa fornecida", () => {
+  let draws = 0;
+  const local = Object.create(RaceRenderer.prototype);
+  local.assets = { turboPickup: {} };
+  local.context = { drawImage: (...values) => { draws++; assert.ok(values.slice(1).every(Number.isFinite)); } };
+  local.project = () => ({ x: 240, y: 150, clipY: 270, scale: 0.7 });
+  local.drawEntities({
+    player: { distance: 0 }, traffic: [], rivals: [], peers: [],
+    pickups: [{ distance: 30, lane: 0, collected: false }],
+  }, {});
+  assert.equal(draws, 1);
+});
+
+test("a derrapagem usa a animação de poeira fornecida", () => {
+  let dustFrames = 0;
+  const local = Object.create(RaceRenderer.prototype);
+  local.assets = { dustParticles: {}, playerIndicator: null };
+  local.playerSprite = null;
+  local.context = {
+    save() {}, restore() {}, translate() {}, scale() {}, rotate() {}, fillRect() {},
+    drawImage: () => { dustFrames++; },
+  };
+  local.drawPlayer({
+    elapsed: 1.5,
+    impactTimer: 0,
+    player: { distance: 30, lateral: 0, speed: 90, nitro: 50, health: 100, boosting: false, drifting: true, steerVisual: 0.4 },
+  });
+  assert.equal(dustFrames, 1);
+});
+
 test("a projeção do motor acelera o movimento próximo à câmera", () => {
   const road = renderer.makeRoad(raceAt(0));
   const nearMotion = renderer.project(road, 10).half - renderer.project(road, 20).half;

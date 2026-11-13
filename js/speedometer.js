@@ -40,9 +40,10 @@ function line(ctx, x0, y0, x1, y1, color, thickness = 1) {
 }
 
 export class PixelSpeedometer {
-  constructor(canvas) {
+  constructor(canvas, face = null) {
     this.context = canvas.getContext("2d");
     this.context.imageSmoothingEnabled = false;
+    this.face = face;
     this.lastFrame = "";
   }
 
@@ -53,6 +54,22 @@ export class PixelSpeedometer {
     this.lastFrame = key;
     const ctx = this.context;
     ctx.clearRect(0, 0, 96, 104);
+    if (this.face) {
+      ctx.drawImage(this.face, 0, 0, 96, 104);
+      // Remove o ponteiro e os dígitos estáticos do mockup antes de desenhar os valores reais.
+      const zeroAngle = gaugeAngle(0);
+      line(ctx, 48 - Math.cos(zeroAngle) * 5, 45 - Math.sin(zeroAngle) * 5, 48 + Math.cos(zeroAngle) * 33, 45 + Math.sin(zeroAngle) * 33, "#0b1328", 4);
+      ctx.fillStyle = "#10182c"; ctx.fillRect(20, 74, 57, 19);
+      ctx.fillStyle = "#687693"; ctx.fillRect(57, 76, 1, 15);
+      const angle = gaugeAngle(value);
+      line(ctx, 48 - Math.cos(angle) * 4, 45 - Math.sin(angle) * 4, 48 + Math.cos(angle) * 31, 45 + Math.sin(angle) * 31, boosting ? "#ffe256" : "#ff332f", 2);
+      ctx.fillStyle = "#e8e9ef"; ctx.fillRect(46, 43, 5, 5);
+      const digits = String(value).padStart(3, "0");
+      text(ctx, digits, 27, 76, 2, boosting ? "#ffe56b" : "#50e9bc");
+      text(ctx, "KM/H", 29, 88, 1, "#e9f2ff");
+      text(ctx, String(gear), 67, 78, 2, "#ffe56b");
+      return;
+    }
     // Rasterized circle, without Canvas antialiasing or external font assets.
     for (let y = 0; y <= 88; y++) {
       const dy = y - 44;

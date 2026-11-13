@@ -81,6 +81,10 @@ O modo de diagnóstico pode ser ativado acrescentando `?debugScenery=1` ao ender
 
 O panorama atual de Brasília já contém o Lago Paranoá e marcos arquitetônicos. Por isso a Orla não repete esses elementos como sprites distantes; ela usa apenas guarda-corpos, placas, bancos e vegetação lateral.
 
+### HUD, obstáculos e efeitos em sprites
+
+Os PNGs fornecidos em `assets/ui` e `assets/scenery` substituem os desenhos provisórios sem alterar suas regras: buracos continuam projetados na pista e causando o mesmo dano, a garrafa de turbo usa a coleta existente, poeira aparece em derrapagens e saídas de pista, e pétalas são ativadas na Avenida dos Ipês. Velocímetro, barras de nitro e integridade e minimapa permanecem dinâmicos, inclusive no modo versus local.
+
 ### Referências e materiais
 
 A referência de linguagem visual é Top Gear/Top Racer; esta implementação não inclui código, sprites ou músicas extraídos desses jogos. A abordagem pseudo-3D foi estudada nos [artigos de Jake Gordon](https://jakesgordon.com/writing/javascript-racer-v2-curves/) e no [JavaScript Racer](https://github.com/jakesgordon/javascript-racer). Os assets existentes do Rua Livre foram mantidos, e os efeitos e a trilha são gerados pelo código do projeto.

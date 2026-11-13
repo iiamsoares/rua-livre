@@ -19,6 +19,15 @@ const INDICATOR_CROPS = Object.freeze({
   rival: { x: 400, y: 330, width: 460, height: 570 },
   player: { x: 330, y: 285, width: 590, height: 920 },
 });
+const PARTICLE_FRAME = 181;
+const PARTICLE_COLUMNS = 8;
+const PARTICLE_ROWS = 6;
+const POTHOLE_CROP = Object.freeze({ x: 300, y: 320, width: 950, height: 400 });
+const TURBO_CROP = Object.freeze({ x: 427, y: 38, width: 400, height: 1161 });
+const MINIMAP_PATH = Object.freeze([
+  [0.25, 0.73], [0.42, 0.63], [0.77, 0.58], [0.63, 0.45],
+  [0.75, 0.36], [0.67, 0.3], [0.24, 0.19],
+]);
 
 function spriteCell(sheet, index, grid = null, rows = 4) {
   const column = index % 4;
@@ -41,20 +50,73 @@ function loadImage(source) {
   });
 }
 
+function processImage(image, processPixel) {
+  if (!image || typeof document === "undefined") return image;
+  const canvas = document.createElement("canvas");
+  canvas.width = image.width;
+  canvas.height = image.height;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  context.drawImage(image, 0, 0);
+  const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
+  for (let offset = 0; offset < pixels.data.length; offset += 4) processPixel(pixels.data, offset);
+  context.putImageData(pixels, 0, 0);
+  return canvas;
+}
+
+function preparePetals(image) {
+  return processImage(image, (data, offset) => {
+    if (data[offset + 3] < 80) data[offset + 3] = 0;
+  });
+}
+
+function prepareMiniMap(image) {
+  return processImage(image, (data, offset) => {
+    const red = data[offset];
+    const green = data[offset + 1];
+    const blue = data[offset + 2];
+    if (red > 175 && red > green * 1.45 && red > blue * 1.35) {
+      data[offset] = 246;
+      data[offset + 1] = 247;
+      data[offset + 2] = 252;
+    }
+  });
+}
+
 export async function loadGameAssets(environmentId = "rio") {
   const environment = environmentFor(environmentId);
   const atlasDefinitions = environment.atlases || (environment.atlas ? [environment.atlas] : []);
-  const [background, sceneryImages, npcCars, rivalIndicator, playerIndicator, ...playerSprites] = await Promise.all([
+  const [background, sceneryImages, npcCars, rivalIndicator, playerIndicator, pothole, turboPickup, petalsSource, dustParticles, speedometerFace, miniMapSource, ...playerSprites] = await Promise.all([
     loadImage(environment.panorama),
     Promise.all(atlasDefinitions.map((atlas) => loadImage(atlas.source))),
     loadImage("assets/cars/player/npcs_carro.png"),
     loadImage("assets/ui/seta_inimigo.png"),
     loadImage("assets/ui/seta_jogador.png"),
+    loadImage("assets/scenery/buraco_estrada.png"),
+    loadImage("assets/scenery/turbo.png"),
+    loadImage("assets/scenery/sprite_folhas.png"),
+    loadImage("assets/scenery/sprite_poeira.png"),
+    loadImage("assets/ui/velocimetro.png"),
+    loadImage("assets/ui/mini_mapa.png"),
     ...PLAYER_CARS.map((car) => loadImage(car.spriteAsset)),
   ]);
   const sceneryAtlases = Object.fromEntries(atlasDefinitions.map((atlas, index) => [atlas.id, sceneryImages[index]]));
   const playerCars = Object.fromEntries(PLAYER_CARS.map((car, index) => [car.id, playerSprites[index]]));
-  return { background, sceneryAtlases, sceneryAtlas: sceneryImages[0] || null, environmentId, playerCars, npcCars, rivalIndicator, playerIndicator };
+  return {
+    background,
+    sceneryAtlases,
+    sceneryAtlas: sceneryImages[0] || null,
+    environmentId,
+    playerCars,
+    npcCars,
+    rivalIndicator,
+    playerIndicator,
+    pothole,
+    turboPickup,
+    petals: preparePetals(petalsSource),
+    dustParticles,
+    speedometerFace,
+    miniMap: prepareMiniMap(miniMapSource),
+  };
 }
 
 export class RaceRenderer {
@@ -66,6 +128,7 @@ export class RaceRenderer {
     this.context.setTransform(VIEW.pixelWidth / VIEW.width, 0, 0, VIEW.pixelHeight / VIEW.height, 0, 0);
     this.mapCanvas = mapCanvas;
     this.mapContext = mapCanvas.getContext("2d");
+    this.mapContext.imageSmoothingEnabled = false;
     this.assets = assets;
     this.hasSceneryAtlases = Object.values(assets.sceneryAtlases || {}).some(Boolean);
     this.playerCar = PLAYER_CARS[0];
@@ -314,6 +377,19 @@ export class RaceRenderer {
       if (center.y > center.clipY) continue;
       context.save();
       context.beginPath(); context.rect(0, 0, VIEW.width, Math.max(0, center.clipY)); context.clip();
+      if (this.assets?.pothole) {
+        const width = Math.max(3, Math.round(31 * center.scale / 1.5) * 1.5);
+        const height = Math.max(1.5, Math.round(width * 0.34 / 1.5) * 1.5);
+        context.drawImage(
+          this.assets.pothole,
+          POTHOLE_CROP.x, POTHOLE_CROP.y, POTHOLE_CROP.width, POTHOLE_CROP.height,
+          Math.round((center.x - width / 2) / 1.5) * 1.5,
+          Math.round((center.y - height / 2) / 1.5) * 1.5,
+          width, height,
+        );
+        context.restore();
+        continue;
+      }
       for (const [size, color] of [[1.25, "#77706a"], [1, "#12131b"], [0.65, "#080a10"]]) {
         context.fillStyle = color;
         context.beginPath();
@@ -361,8 +437,18 @@ export class RaceRenderer {
       const point = this.project(road, delta, pickup.lane);
       if (point.y > point.clipY) continue;
       const size = Math.max(2, 12 * point.scale);
-      this.context.fillStyle = "#ff6a27"; this.context.fillRect(point.x - size / 2, point.y - size * 1.8, size, size * 1.8);
-      this.context.fillStyle = "#fff16b"; this.context.fillRect(point.x - size * 0.18, point.y - size * 1.55, size * 0.36, size * 0.8);
+      if (this.assets.turboPickup) {
+        const height = size * 2.35;
+        const width = height * TURBO_CROP.width / TURBO_CROP.height;
+        this.context.drawImage(
+          this.assets.turboPickup,
+          TURBO_CROP.x, TURBO_CROP.y, TURBO_CROP.width, TURBO_CROP.height,
+          point.x - width / 2, point.y - height, width, height,
+        );
+      } else {
+        this.context.fillStyle = "#ff6a27"; this.context.fillRect(point.x - size / 2, point.y - size * 1.8, size, size * 1.8);
+        this.context.fillStyle = "#fff16b"; this.context.fillRect(point.x - size * 0.18, point.y - size * 1.55, size * 0.36, size * 0.8);
+      }
     }
   }
 
@@ -385,10 +471,24 @@ export class RaceRenderer {
       context.fillStyle = "#fff5a3"; context.fillRect(-12, -12, 4, 9);
     }
     if (player.drifting || (Math.abs(player.lateral) > 0.93 && player.speed > 30)) {
-      context.fillStyle = player.drifting ? "#c5c3d8" : "#d7b373";
-      for (let index = 0; index < 4; index++) {
-        const phase = mod(player.distance * 0.2 + index * 0.25, 1);
-        context.fillRect((index % 2 ? 25 : -30) + player.steerVisual * phase * 10, -8 + phase * 8, 2 + phase * 6, 2 + phase * 3);
+      if (this.assets.dustParticles) {
+        const frame = Math.floor(race.elapsed * 13) % (PARTICLE_COLUMNS * PARTICLE_ROWS);
+        const column = frame % PARTICLE_COLUMNS;
+        const row = Math.min(PARTICLE_ROWS - 1, Math.floor(frame / PARTICLE_COLUMNS));
+        const width = 105 + Math.min(35, player.speed * 0.13);
+        context.globalAlpha = player.drifting ? 0.78 : 0.62;
+        context.drawImage(
+          this.assets.dustParticles,
+          column * PARTICLE_FRAME, row * PARTICLE_FRAME, PARTICLE_FRAME, PARTICLE_FRAME,
+          -width / 2 + player.steerVisual * 5, -45, width, 48,
+        );
+        context.globalAlpha = 1;
+      } else {
+        context.fillStyle = player.drifting ? "#c5c3d8" : "#d7b373";
+        for (let index = 0; index < 4; index++) {
+          const phase = mod(player.distance * 0.2 + index * 0.25, 1);
+          context.fillRect((index % 2 ? 25 : -30) + player.steerVisual * phase * 10, -8 + phase * 8, 2 + phase * 6, 2 + phase * 3);
+        }
       }
     }
     if (this.playerSprite) {
@@ -423,6 +523,42 @@ export class RaceRenderer {
     }
   }
 
+  drawEnvironmentalParticles(race, road) {
+    if (!this.assets.petals) return;
+    const environment = environmentFor(race.track.environmentId);
+    const progress = mod(race.player.distance, race.track.length) / race.track.length;
+    const zone = environment.zones?.length ? zoneAtProgress(progress, environment.zones) : null;
+    const intensity = zone?.effects?.petals || 0;
+    const count = Math.min(6, Math.round(intensity * 8));
+    if (!count) return;
+
+    const spacing = 22;
+    const first = Math.floor(race.player.distance / spacing) + 1;
+    for (let index = 0; index < count; index += 1) {
+      const worldDistance = (first + index * 2) * spacing;
+      const distance = worldDistance - race.player.distance;
+      if (distance <= 2 || distance >= RACE_RULES.visibleDistance) continue;
+      const laneSeed = (first * 13 + index * 17) % 23;
+      const lane = (laneSeed / 22 - 0.5) * 3.1;
+      const point = this.project(road, distance, lane);
+      if (point.y > point.clipY) continue;
+      const frame = mod(Math.floor(race.elapsed * 9) + first + index * 7, PARTICLE_COLUMNS * PARTICLE_ROWS);
+      const column = frame % PARTICLE_COLUMNS;
+      const row = Math.floor(frame / PARTICLE_COLUMNS);
+      const size = Math.max(2, 12 * point.scale);
+      const drift = Math.sin(race.elapsed * 2.1 + index * 1.7) * size * 0.65;
+      this.context.save();
+      this.context.beginPath(); this.context.rect(0, 0, VIEW.width, Math.max(0, point.clipY)); this.context.clip();
+      this.context.globalAlpha = 0.55 + intensity * 0.38;
+      this.context.drawImage(
+        this.assets.petals,
+        column * PARTICLE_FRAME, row * PARTICLE_FRAME, PARTICLE_FRAME, PARTICLE_FRAME,
+        point.x - size / 2 + drift, point.y - size * 1.4, size, size,
+      );
+      this.context.restore();
+    }
+  }
+
   drawSceneryDebug(race) {
     if (!this.debugScenery) return;
     const environment = environmentFor(race.track.environmentId);
@@ -449,6 +585,23 @@ export class RaceRenderer {
     const context = this.mapContext;
     const points = race.track.mapPoints;
     context.clearRect(0, 0, this.mapCanvas.width, this.mapCanvas.height);
+    if (this.assets.miniMap) {
+      context.drawImage(this.assets.miniMap, 0, 0, this.mapCanvas.width, this.mapCanvas.height);
+      const fraction = mod(race.player.distance, race.track.length) / race.track.length;
+      const pathPosition = fraction * (MINIMAP_PATH.length - 1);
+      const pathIndex = Math.min(MINIMAP_PATH.length - 2, Math.floor(pathPosition));
+      const mix = pathPosition - pathIndex;
+      const from = MINIMAP_PATH[pathIndex];
+      const to = MINIMAP_PATH[pathIndex + 1];
+      const x = (from[0] + (to[0] - from[0]) * mix) * this.mapCanvas.width;
+      const y = (from[1] + (to[1] - from[1]) * mix) * this.mapCanvas.height;
+      const radius = Math.max(2, this.mapCanvas.width * 0.038);
+      context.fillStyle = "#ff413c";
+      context.beginPath(); context.arc(x, y, radius, 0, Math.PI * 2); context.fill();
+      context.fillStyle = "#fff6e8";
+      context.fillRect(Math.round(x - radius * 0.35), Math.round(y - radius * 0.35), Math.max(1, Math.round(radius * 0.7)), Math.max(1, Math.round(radius * 0.7)));
+      return;
+    }
     context.beginPath();
     points.forEach((point, index) => { const x = 7 + point.x * 78; const y = 5 + point.y * 48; if (index === 0) context.moveTo(x, y); else context.lineTo(x, y); });
     context.strokeStyle = "#ecf2ff"; context.lineWidth = 3; context.lineJoin = "round"; context.stroke();
@@ -472,6 +625,7 @@ export class RaceRenderer {
     this.drawRoad(race, road);
     this.drawPotholes(race, road);
     this.drawScenery(race, road);
+    this.drawEnvironmentalParticles(race, road);
     this.drawEntities(race, road);
     this.drawPlayer(race);
     this.drawAtmosphere(race);
