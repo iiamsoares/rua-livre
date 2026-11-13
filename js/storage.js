@@ -5,16 +5,20 @@ export const PREVIOUS_KEY = "ruaLivre_save_v3";
 export const LEGACY_KEY = "ruaLivre2D_deluxe_v2";
 
 export function defaultSave() {
-  return { version: 4, credits: 0, carId: PLAYER_CARS[0].id, preparation: 1, bestPosition: null, bestTime: null, audio: true };
+  return { version: 4, credits: 0, carId: PLAYER_CARS[0].id, playerTwoCarId: PLAYER_CARS[1].id, ownedCars: [], preparation: 1, bestPosition: null, bestTime: null, audio: true };
 }
 
 export function sanitizeSave(candidate = {}) {
   const base = defaultSave();
-  const carId = PLAYER_CARS.some((car) => car.id === candidate.carId) ? candidate.carId : base.carId;
+  const ownedCars = [...new Set(Array.isArray(candidate.ownedCars) ? candidate.ownedCars.filter((id) => PLAYER_CARS.some((car) => car.id === id)) : [])];
+  const available = (id) => PLAYER_CARS.some((car) => car.id === id && (!car.price || ownedCars.includes(id)));
+  const carId = available(candidate.carId) ? candidate.carId : base.carId;
   return {
     version: 4,
     credits: clamp(Number.isFinite(Number(candidate.credits)) ? Math.floor(Number(candidate.credits)) : 0, 0, 9999999),
     carId,
+    playerTwoCarId: available(candidate.playerTwoCarId) ? candidate.playerTwoCarId : base.playerTwoCarId,
+    ownedCars,
     preparation: clamp(Number.isFinite(Number(candidate.preparation)) ? Math.floor(Number(candidate.preparation)) : 1, 1, 3),
     bestPosition: candidate.bestPosition == null ? null : clamp(Math.floor(Number(candidate.bestPosition)) || RACE_RULES.opponents + 1, 1, RACE_RULES.opponents + 1),
     bestTime: Number(candidate.bestTime) > 0 ? Number(candidate.bestTime) : null,

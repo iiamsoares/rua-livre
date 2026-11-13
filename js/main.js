@@ -1,16 +1,18 @@
-import { PLAYER_CARS, RACE_RULES, UPGRADE_COSTS, formatMoney, formatTime } from "./config.js";
+import { PLAYER_CARS, RACE_RULES, formatMoney, formatTime } from "./config.js";
 import { GameAudio } from "./audio.js";
 import { InputController } from "./input.js";
 import { RaceRenderer, loadGameAssets } from "./renderer.js";
-import { carStats, createRace, updateRace } from "./race.js";
+import { createRace, updateRace } from "./race.js";
 import { clearSave, loadSave, writeSave } from "./storage.js";
 import { createRioTrack } from "./track.js";
 import { PixelSpeedometer } from "./speedometer.js";
 import { createVersus, updateVersus } from "./versus.js";
+import { GarageUI } from "./garage.js";
+import { canStart, selectedIds } from "./garage-model.js";
 
 const element = (selector) => document.querySelector(selector);
 const elements = (selector) => [...document.querySelectorAll(selector)];
-const screens = { title: element("#titleScreen"), garage: element("#garageScreen"), race: element("#raceScreen") };
+const screens = Object.fromEntries(["title", "mode", "garage", "preparation", "race"].map((name) => [name, element(`#${name}Screen`)]));
 
 let save = loadSave();
 let activeScreen = "title";
@@ -19,7 +21,7 @@ let accumulator = 0;
 let messageTimer = 0;
 let resultStored = false;
 let versus = null;
-let localMode = false;
+const garage = new GarageUI({ getSave: () => save, setSave: (next) => { save = writeSave(next); updateProfile(); }, navigate: (screen) => showScreen(screen), start: () => startRace(), onPurchase: () => audio.beep(650, 0.14, 0.05) });
 
 const track = createRioTrack();
 const audio = new GameAudio(save.audio);
@@ -39,10 +41,6 @@ for (const [index, view] of [firstView, secondView].entries()) {
   label.textContent = `JOGADOR ${index + 1}`;
   view.append(label);
 }
-PLAYER_CARS.forEach((car, index) => {
-  const option = new Option(car.name, car.id, false, index === 1);
-  element("#playerTwoCar").append(option);
-});
 const renderer = new RaceRenderer(element("#gameCanvas"), element("#mapCanvas"), assets);
 const speedometer = new PixelSpeedometer(element("#speedGauge"));
 const rendererTwo = new RaceRenderer(element("#gameCanvasTwo"), element("#mapCanvasTwo"), assets);
@@ -54,78 +52,23 @@ function showScreen(name) {
   Object.entries(screens).forEach(([key, screen]) => screen.classList.toggle("active", key === name));
   document.body.dataset.screen = name;
   if (name !== "race") audio.update(0, false);
-  if (name === "garage") updateGarage();
+  input.clear();
+  input.enabled = name === "race";
+  garage.render(name);
+  const heading = screens[name].querySelector("h1, h2");
+  if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
   scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function ordinal(position) { return `${position}º`; }
 
 function updateProfile() {
+  const car = PLAYER_CARS.find((item) => item.id === save.carId) || PLAYER_CARS[0];
+  element(".title-car").src = car.frontAsset;
+  element(".title-car").alt = `${car.name}, o carro do jogador`;
   element("#creditsLabel").textContent = formatMoney(save.credits);
   element("#bestLabel").textContent = save.bestPosition == null ? "—" : `${ordinal(save.bestPosition)} · ${formatTime(save.bestTime || 0)}`;
   element("#soundButton").textContent = save.audio ? "SOM ON" : "SOM OFF";
-}
-
-function selectedCar() {
-  return PLAYER_CARS.find((car) => car.id === save.carId) || PLAYER_CARS[0];
-}
-
-function renderCars() {
-  const container = element("#carOptions");
-  container.replaceChildren();
-  for (const car of PLAYER_CARS) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `car-button${car.id === save.carId ? " selected" : ""}`;
-    button.title = `Escolher ${car.name}`;
-    button.setAttribute("aria-label", `Escolher ${car.name}`);
-    button.setAttribute("aria-pressed", car.id === save.carId ? "true" : "false");
-    const image = document.createElement("img");
-    image.src = car.frontAsset;
-    image.alt = "";
-    const label = document.createElement("span");
-    label.textContent = car.name;
-    button.append(image, label);
-    button.addEventListener("click", () => {
-      save.carId = car.id;
-      save = writeSave(save);
-      renderer.setPlayerCar(save.carId);
-      renderCars();
-      updateGarageCar();
-    });
-    container.append(button);
-  }
-}
-
-function updateGarageCar() {
-  const car = selectedCar();
-  const garageCar = element("#garageCar");
-  garageCar.src = car.frontAsset;
-  garageCar.alt = `${car.name} visto de frente`;
-  element("#garageHeading").textContent = `Prepare o ${car.name}`;
-  element("#carName").textContent = car.name;
-  element("#carDescription").textContent = car.description;
-  const titleCar = element(".title-car");
-  titleCar.src = car.frontAsset;
-  titleCar.alt = `${car.name}, o carro do jogador`;
-}
-
-function updateGarage() {
-  const stats = carStats(save.preparation);
-  element("#speedValue").textContent = Math.round(stats.topSpeed);
-  element("#accelValue").textContent = Math.round(stats.acceleration);
-  element("#speedStat").style.width = `${Math.round(stats.topSpeed / 220 * 100)}%`;
-  element("#accelStat").style.width = `${Math.min(100, Math.round(stats.acceleration / 80 * 100))}%`;
-  element("#upgradeLevel").textContent = `ESTÁGIO ${save.preparation}/3`;
-  const button = element("#upgradeButton");
-  const maxed = save.preparation >= 3;
-  button.disabled = maxed;
-  element("#upgradeCost").textContent = maxed ? "MÁXIMO" : formatMoney(UPGRADE_COSTS[save.preparation]);
-  button.querySelector("small").textContent = maxed ? "INSTALADO" : "INSTALAR";
-  renderer.setPlayerCar(save.carId);
-  renderCars();
-  updateGarageCar();
-  updateProfile();
 }
 
 function showMessage(text, duration = 680) {
@@ -137,17 +80,19 @@ function showMessage(text, duration = 680) {
 }
 
 function startRace() {
+  if (!canStart(save, garage.state.mode)) { showScreen("garage"); return; }
+  const localMode = garage.state.mode === "versus";
   audio.unlock();
   input.clear();
   race = createRace(save, track, Math.floor(performance.now() * 1000));
-  versus = localMode ? createVersus(save, track, race.seed, [save.carId, element("#playerTwoCar").value]) : null;
+  versus = localMode ? createVersus(save, track, race.seed, selectedIds(save)) : null;
   if (versus) race = versus.races[0];
   shell.classList.toggle("split", localMode);
   input.multiplayer = localMode;
   renderer.spriteHeightScale = localMode ? 2 : 1;
   rendererTwo.spriteHeightScale = 2;
   element(".controls-strip").textContent = localMode ? "J1: WASD · ESPAÇO NITRO     |     J2: SETAS · ENTER NITRO     |     P / ESC PAUSAR" : "↑ / W ACELERAR · ↓ / S FREAR · ← → / A D VIRAR · ESPAÇO / SHIFT NITRO · P / ESC PAUSAR";
-  rendererTwo.setPlayerCar(element("#playerTwoCar").value);
+  rendererTwo.setPlayerCar(save.playerTwoCarId);
   resultStored = false;
   accumulator = 0;
   renderer.setPlayerCar(save.carId);
@@ -223,28 +168,13 @@ function updateHud(current = race, suffix = "", gauge = speedometer) {
 const input = new InputController(() => togglePause());
 
 elements("[data-screen]").forEach((button) => button.addEventListener("click", () => showScreen(button.dataset.screen)));
-element("#playButton").addEventListener("click", () => { audio.unlock(); showScreen("garage"); });
-element("#raceButton").addEventListener("click", () => { localMode = false; startRace(); });
-element("#versusButton").addEventListener("click", () => { localMode = true; startRace(); });
+element("#playButton").addEventListener("click", () => { audio.unlock(); showScreen("mode"); });
 element("#pauseButton").addEventListener("click", () => togglePause(true));
 element("#resumeButton").addEventListener("click", () => togglePause(false));
 element("#restartButton").addEventListener("click", startRace);
 element("#againButton").addEventListener("click", startRace);
 elements(".quit-button").forEach((button) => button.addEventListener("click", () => { input.clear(); race = null; showScreen("garage"); }));
 
-element("#upgradeButton").addEventListener("click", () => {
-  if (save.preparation >= 3) return;
-  const cost = UPGRADE_COSTS[save.preparation];
-  if (save.credits < cost) {
-    element("#upgradeButton").animate([{ transform: "translateX(-5px) skew(-4deg)" }, { transform: "translateX(5px) skew(-4deg)" }, { transform: "skew(-4deg)" }], { duration: 260 });
-    return;
-  }
-  save.credits -= cost;
-  save.preparation += 1;
-  save = writeSave(save);
-  audio.beep(650, 0.14, 0.05);
-  updateGarage();
-});
 
 element("#soundButton").addEventListener("click", () => {
   save.audio = !save.audio;
@@ -262,7 +192,8 @@ element("#resetSaveButton").addEventListener("click", () => {
   audio.setEnabled(save.audio);
   renderer.setPlayerCar(save.carId);
   howDialog.close();
-  updateGarage();
+  garage.reset();
+  garage.render(activeScreen);
 });
 
 let previousFrame = performance.now();
@@ -294,6 +225,5 @@ function frame(now) {
 }
 
 updateProfile();
-updateGarage();
 showScreen("title");
 requestAnimationFrame(frame);

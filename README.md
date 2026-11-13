@@ -20,6 +20,16 @@ Depois, abra `http://127.0.0.1:4173`. Também é possível usar `npm.cmd run dev
 - `Espaço` ou `Shift`: nitro
 - `P` ou `Esc`: pausar
 
+## Fluxo da garagem
+
+O fluxo jogável segue `Menu → Modo → Garagem → Preparação → Corrida`. No modo versus, a garagem mantém uma seleção independente para cada jogador; a preparação continua compartilhada, como no sistema original.
+
+O cenário limpo da oficina fica em `assets/scenery/Garagem Pixel Art Rua Livre.png`. O caminho usado pela interface está centralizado na variável `--workshop-background`, no início de `css/garage.css`. Para trocar o cenário posteriormente, coloque a nova imagem em `assets/scenery` e altere apenas essa variável. A imagem deve conter somente o cenário: carro, textos, botões e HUD são sobrepostos pela aplicação.
+
+Os carros atuais continuam definidos em `PLAYER_CARS`, dentro de `js/config.js`. Um veículo futuro pode receber `price` para usar o fluxo de compra e precisa informar os mesmos assets de frente e spritesheet dos demais. Enquanto o Onix RS não possui sprites, o catálogo preserva UP TSI, Chevette e Vectra GLS.
+
+Os estágios existentes permanecem de 1/3 a 3/3, com preços de R$ 500 e R$ 900. A tela mostra 0/3 como indisponível, pois o save original começa no estágio 1. Motor e pneus representam os efeitos reais do pacote atual; acerto individual está identificado como implementação futura e não altera a física.
+
 ## Objetivo
 
 ### Versus local com tela dividida

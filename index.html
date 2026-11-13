@@ -7,6 +7,7 @@
     <title>Rua Livre — Brasil em Alta Rotação</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/garage.css" />
   </head>
   <body>
     <div id="app">
@@ -29,7 +30,7 @@
             <h1 id="titleHeading">A cidade nunca<br /><em>tira o pé.</em></h1>
             <p class="lead">Corte a orla, encare o trânsito e conquiste o pódio em uma corrida arcade inspirada nos clássicos de 16 bits.</p>
             <div class="actions">
-              <button id="playButton" class="primary">PREPARAR O CARRO <span>›</span></button>
+              <button id="playButton" class="primary">JOGAR <span>›</span></button>
               <button id="howButton" class="secondary">COMO JOGAR</button>
             </div>
             <div class="title-meta"><span>3 VOLTAS</span><span>3 RIVAIS</span><span>RIO À MEIA-NOITE</span></div>
@@ -37,38 +38,9 @@
           <img class="title-car" src="assets/cars/player/up_frente.png" alt="UP TSI, o carro do jogador" />
         </section>
 
-        <section id="garageScreen" class="screen garage-screen" aria-labelledby="garageHeading">
-          <div class="section-heading">
-            <div><p class="eyebrow">OFICINA DA ORLA</p><h2 id="garageHeading">Prepare o UP TSI</h2></div>
-            <button class="secondary" data-screen="title">← VOLTAR</button>
-          </div>
-          <div class="garage-grid">
-            <article class="car-stage">
-              <div class="garage-glow"></div>
-              <img id="garageCar" src="assets/cars/player/up_frente.png" alt="UP TSI visto de frente" />
-              <div class="car-name"><strong id="carName">UP TSI</strong><span id="carDescription">1.0 TURBO · TRAÇÃO DIANTEIRA</span></div>
-            </article>
-            <aside class="tune-panel">
-              <p class="panel-kicker">ESCOLHA SEU CARRO</p>
-              <div id="carOptions" class="car-options" aria-label="Escolha do carro"></div>
-              <div class="stat-list">
-                <div><span>VELOCIDADE</span><i><b id="speedStat"></b></i><strong id="speedValue">190</strong></div>
-                <div><span>ACELERAÇÃO</span><i><b id="accelStat"></b></i><strong id="accelValue">52</strong></div>
-                <div><span>CONTROLE</span><i><b style="width:74%"></b></i><strong>74</strong></div>
-              </div>
-              <div class="upgrade-card">
-                <div><small>PREPARAÇÃO</small><strong id="upgradeLevel">ESTÁGIO 1/3</strong><p>Motor, pneus e acerto para ganhar velocidade sem perder controle.</p></div>
-                <button id="upgradeButton" class="upgrade-button"><span id="upgradeCost">R$ 500</span><small>INSTALAR</small></button>
-              </div>
-              <button id="raceButton" class="primary race-button">LARGAR NA AVENIDA <span>›</span></button>
-              <label for="playerTwoCar">CARRO DO JOGADOR 2</label>
-              <select id="playerTwoCar" aria-label="Carro do jogador 2"></select>
-              <button id="versusButton" class="secondary race-button">VERSUS LOCAL · 2 JOGADORES</button>
-              <p class="save-note">J1: WASD + Espaço (nitro). J2: Setas + Enter (nitro). P / Esc pausa ambos. Vence quem terminar primeiro ou permanecer com integridade.</p>
-              <p class="save-note">Carro, preparação e resultados ficam salvos neste navegador.</p>
-            </aside>
-          </div>
-        </section>
+        <section id="modeScreen" class="screen arcade-menu" aria-label="Escolha do modo"></section>
+        <section id="garageScreen" class="screen workshop-screen" aria-label="Garagem"></section>
+        <section id="preparationScreen" class="screen workshop-screen" aria-label="Preparação"></section>
 
         <section id="raceScreen" class="screen race-screen" aria-label="Corrida">
           <div class="race-shell">

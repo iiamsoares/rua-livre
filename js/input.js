@@ -5,6 +5,7 @@ export class InputController {
     this.keys = new Set();
     this.onPause = onPause;
     this.onKeyDown = (event) => {
+      if (this.enabled === false) return;
       const key = event.key.toLowerCase();
       if (CONTROL_KEYS.has(key) || (key === "enter" && this.multiplayer)) event.preventDefault();
       if ((key === "p" || key === "escape") && !event.repeat) this.onPause();

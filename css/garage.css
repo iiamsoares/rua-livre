@@ -1,0 +1,76 @@
+:root { --workshop-background: url("../assets/scenery/Garagem Pixel Art Rua Livre.png"); }
+.workshop-screen, .arcade-menu { padding: 24px clamp(16px, 3vw, 48px) 18px; background: #080a13; font-family: "Courier New", monospace; }
+.workshop-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; max-width: 1600px; margin: 0 auto 18px; }
+.workshop-heading h2 { margin: 0; font: italic 900 clamp(26px, 3vw, 42px)/1.1 "Arial Narrow", sans-serif; text-transform: uppercase; }
+.workshop-heading h2 span { color: #9ca5bc; font-size: .65em; }
+.workshop-heading .eyebrow { margin-bottom: 7px; font-family: inherit; color: var(--yellow); }
+.workshop-grid { max-width: 1600px; margin: auto; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(340px, 1fr); border: 2px solid #555c79; box-shadow: 5px 5px #171c30; background: #0a0e1b; }
+.workshop-scene { position: relative; min-height: 560px; background: var(--workshop-background) center / cover no-repeat; isolation: isolate; overflow: hidden; }
+.workshop-vehicle { position: absolute; width: 66%; height: auto; object-fit: contain; left: 38%; bottom: 12%; transform: translateX(-50%); image-rendering: pixelated; filter: drop-shadow(0 12px 8px #000a); animation: vehicle-arrive .18s ease-out; }
+.scene-caption { position: absolute; left: 3%; bottom: 3%; padding: 10px 14px; border-left: 4px solid var(--lime); background: #090d19ed; max-width: 92%; }
+.scene-caption strong, .scene-caption span { display: block; }
+.scene-caption strong { font: italic 900 clamp(20px, 2.5vw, 34px) "Arial Narrow", sans-serif; }
+.scene-caption span { color: #d9ddea; font-size: clamp(9px, .85vw, 12px); margin-top: 4px; }
+.vehicle-arrows { position: absolute; top: 56%; left: 3%; right: 3%; display: flex; justify-content: space-between; pointer-events: none; }
+.vehicle-arrows button { pointer-events: auto; border-color: var(--yellow); color: var(--yellow); padding: 0 14px; min-height: 42px; font-size: 24px; }
+.workshop-panel { padding: clamp(16px, 2vw, 28px); border-left: 2px solid #555c79; background: linear-gradient(135deg, #151827, #080b16); }
+.workshop-panel h3 { margin: 0 0 10px; font-size: 22px; font-style: italic; }
+.workshop-panel > button { width: 100%; margin-top: 10px; font-family: inherit; font-size: 13px; transform: none; }
+.workshop-screen button:disabled { cursor: not-allowed; opacity: .5; transform: none; filter: none; }
+.workshop-screen button[aria-pressed="true"] { border-color: var(--yellow); color: var(--lime); box-shadow: inset 0 0 14px #b5ff3b12; }
+.vehicle-catalog { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.vehicle-catalog button { padding: 5px; background: #080b16; border: 2px solid #4a526d; cursor: pointer; min-width: 0; }
+.vehicle-catalog img { width: 100%; height: 62px; object-fit: contain; image-rendering: pixelated; }
+.vehicle-catalog strong, .vehicle-catalog small { display: block; font-size: 10px; }
+.vehicle-catalog small { margin-top: 5px; color: #a9b3ca; font-size: 8px; }
+.garage-stats { display: grid; gap: 13px; margin: 24px 0; }
+.garage-stats > div { display: grid; grid-template-columns: 95px 1fr 87px; gap: 7px; align-items: center; font-size: 11px; }
+.garage-stats b { color: var(--lime); text-align: right; font-size: 13px; }
+.garage-stats small { font-size: 9px; color: #b9c2d4; }
+.garage-stats meter { width: 100%; height: 12px; }
+meter::-webkit-meter-bar { background: #2a2d41; border: none; border-radius: 0; }
+meter::-webkit-meter-optimum-value { background: linear-gradient(90deg, var(--lime), var(--yellow)); }
+.vehicle-details { border: 1px solid #59617e; padding: 14px; margin-bottom: 10px; }
+.vehicle-details p { font-size: 11px; color: #bbc3d7; line-height: 1.6; margin: 6px 0; }
+.vehicle-details > div { display: flex; justify-content: space-between; gap: 8px; margin: 13px 0; font-size: 12px; color: var(--yellow); }
+.vehicle-details > div span { color: var(--lime); }
+.workshop-note { color: #bbc3d7; font: 11px/1.6 "Segoe UI", sans-serif; }
+.workshop-balance { border-top: 1px solid #454d68; padding-top: 14px; font-size: 10px; }
+.workshop-balance strong { float: right; color: var(--yellow); font-size: 15px; }
+.garage-notice { min-height: 16px; color: var(--lime); font-size: 11px; line-height: 1.5; }
+.workshop-hint { text-align: center; color: #bbc3d7; font-size: 10px; letter-spacing: .08em; margin: 20px 0 0; }
+.pilot-tabs { display: flex; gap: 10px; max-width: 1600px; margin: 0 auto 14px; }
+.pilot-tabs button, .pilot-tabs > span { border: 2px solid #434d69; background: #111625; padding: 9px 16px; font: bold 12px "Courier New", monospace; }
+.pilot-tabs button { cursor: pointer; }
+.pilot-tabs small { display: block; color: #bec6d8; font-size: 9px; margin-top: 5px; }
+.pilot-tabs b { color: var(--yellow); margin-right: 8px; }
+.stage-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; list-style: none; padding: 0; }
+.stage-steps li { border: 1px solid #525a73; padding: 9px 3px; text-align: center; }
+.stage-steps li.current { border-color: var(--lime); color: var(--lime); background: #18221c; }
+.stage-steps small { display: block; font-size: 7px; margin-top: 5px; }
+.stage-steps li:first-child { color: #9ba3ba; }
+.upgrade-categories { display: grid; gap: 8px; margin: 16px 0; }
+.upgrade-categories > div { border-left: 3px solid var(--yellow); padding: 6px 10px; background: #1b2030; }
+.upgrade-categories b { font-size: 12px; }
+.upgrade-categories span { display: block; color: #bfc7db; font: 11px/1.4 "Segoe UI", sans-serif; margin-top: 4px; }
+.upgrade-comparison { border-collapse: collapse; width: 100%; font-size: 11px; }
+.upgrade-comparison caption { text-align: left; color: var(--yellow); padding: 8px 0; }
+.upgrade-comparison td, .upgrade-comparison th { border-bottom: 1px solid #3d455d; padding: 8px 3px; text-align: left; }
+.upgrade-comparison td:last-child { color: var(--lime); }
+.purchase-confirm { border: 2px solid var(--yellow); padding: 12px; margin-top: 15px; }
+.purchase-confirm p { font-size: 12px; }
+.purchase-confirm button { width: 100%; margin-top: 8px; font-size: 12px; }
+.mode-cards { max-width: 1100px; margin: 5vh auto; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.mode-card { display: flex; flex-direction: column; text-align: left; gap: 22px; padding: clamp(22px, 4vw, 48px); border: 2px solid #59617e; box-shadow: 5px 5px #252b42; background: linear-gradient(145deg, #20263b, #0b0e1b); cursor: pointer; }
+.mode-card:hover, .mode-card:focus-visible { border-color: var(--yellow); background: linear-gradient(145deg, #303824, #0b0e1b); }
+.mode-card strong { font: italic 900 clamp(24px, 3vw, 38px) "Arial Narrow", sans-serif; }
+.mode-card > span:not(.mode-art) { color: #c0c8da; font: 13px/1.7 "Courier New", monospace; }
+.mode-card .mode-number { color: var(--yellow) !important; letter-spacing: .1em; }
+.mode-art { color: var(--lime); font: 900 clamp(40px, 6vw, 78px) "Courier New", monospace; text-shadow: 4px 4px #39483b; }
+.mode-art i { color: var(--yellow); font-style: normal; }
+.mode-card small { font: 10px/1.7 "Courier New", monospace; }
+.mode-card > b { color: var(--lime); font: bold 13px "Courier New", monospace; margin-top: auto; }
+@keyframes vehicle-arrive { from { opacity: .3; transform: translateX(-46%); } to { opacity: 1; transform: translateX(-50%); } }
+@media (max-width: 1000px) { .workshop-grid { grid-template-columns: 1fr; max-width: 800px; } .workshop-panel { border-left: none; border-top: 2px solid #555c79; } .workshop-scene { width: 100%; min-height: 0; aspect-ratio: 1672 / 941; } .workshop-vehicle { width: 55%; left: 41%; bottom: 10%; } }
+@media (max-width: 600px) { .mode-cards { grid-template-columns: 1fr; } .workshop-heading { align-items: start; } .workshop-heading .secondary { font-size: 10px; padding: 0 10px; min-height: 40px; } .workshop-screen { padding-inline: 10px; } .pilot-tabs button { padding: 8px; flex: 1; } .scene-caption { padding: 5px 8px; } .vehicle-arrows button { min-height: 34px; padding-inline: 9px; } .garage-stats > div { grid-template-columns: 83px 1fr 80px; } }
+@media (prefers-reduced-motion: reduce) { .workshop-vehicle { animation: none; } .workshop-screen button { transition: none; } }
