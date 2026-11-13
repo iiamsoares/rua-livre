@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { PLAYER_CARS } from "../js/config.js";
 import { carPreviewMarkup } from "../js/car-preview.js";
 import { peerCarFrameIndex, playerCarFrameIndex } from "../js/renderer.js";
@@ -17,6 +17,7 @@ test("catálogo registra os sete carros novos com sprites e recortes válidos", 
     assert.equal(car.spriteLayout, "direction-columns");
     assert.equal(car.spriteRows, 2);
     assert.equal(car.spriteFrames.length, 8);
+    assert.equal(car.garageCentered, true);
     assert.ok(car.spriteAsset.startsWith("assets/cars/player/"));
     assert.ok(car.frontAsset.startsWith("assets/cars/player/"));
     assert.ok(existsSync(car.frontAsset), `imagem frontal ausente: ${car.frontAsset}`);
@@ -44,6 +45,14 @@ test("recorte da spritesheet continua disponível como fallback", () => {
   }, "vehicle-thumbnail", "Protótipo");
   assert.match(markup, /car-preview-crop vehicle-thumbnail/);
   assert.match(markup, /prototipo\.png/);
+});
+
+test("garagem centraliza somente os sete carros com arte frontal nova", () => {
+  const garage = readFileSync("js/garage.js", "utf8");
+  const css = readFileSync("css/garage.css", "utf8");
+  assert.match(garage, /car\.garageCentered[\s\S]*workshop-vehicle-centered/);
+  assert.match(css, /\.workshop-vehicle\.workshop-vehicle-centered \{ left: 50%; \}/);
+  for (const car of PLAYER_CARS.slice(0, 3)) assert.equal(car.garageCentered, undefined);
 });
 
 test("layout novo escolhe direção traseira e versão com nitro", () => {

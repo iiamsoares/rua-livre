@@ -18,6 +18,7 @@ body[data-screen="mode"] .arcade-menu { min-height: 100vh; min-height: 100svh; p
 .car-preview-crop { display: block; position: relative; overflow: hidden; image-rendering: pixelated; }
 .car-preview-crop > img { position: absolute; max-width: none !important; margin: 0 !important; object-fit: fill !important; transform: none !important; filter: none !important; image-rendering: pixelated; }
 .workshop-vehicle { position: absolute; width: 66%; height: auto; object-fit: contain; left: 60%; bottom: 12%; transform: translateX(-50%); image-rendering: pixelated; filter: drop-shadow(0 12px 8px #000a); animation: vehicle-arrive .18s ease-out; }
+.workshop-vehicle.workshop-vehicle-centered { left: 50%; }
 .scene-caption { position: absolute; left: 3%; bottom: 3%; padding: 10px 14px; border-left: 4px solid var(--lime); background: #090d19ed; max-width: 92%; }
 .scene-caption strong, .scene-caption span { display: block; }
 .scene-caption strong { font: italic 900 clamp(20px, 2.5vw, 34px) "Arial Narrow", sans-serif; }
@@ -84,6 +85,6 @@ meter::-webkit-meter-optimum-value { background: linear-gradient(90deg, var(--li
 .mode-back { position: absolute; z-index: 3; top: clamp(14px, 2.5vh, 28px); left: clamp(14px, 2.5vw, 34px); min-height: 42px; padding: 0 17px; border: 2px solid #f5c343; color: #ffe69b; background: #07101ddd; font: 900 12px "Courier New", monospace; cursor: pointer; box-shadow: 4px 4px #02050aaa; }
 .mode-back:hover { color: #08101c; background: #f5c343; }
 @keyframes vehicle-arrive { from { opacity: .3; transform: translateX(-46%); } to { opacity: 1; transform: translateX(-50%); } }
-@media (max-width: 1000px) { .workshop-grid { grid-template-columns: 1fr; max-width: 800px; } .workshop-panel { border-left: none; border-top: 2px solid #555c79; } .workshop-scene { width: 100%; min-height: 0; aspect-ratio: 1672 / 941; } .workshop-vehicle { width: 55%; left: 41%; bottom: 10%; } }
+@media (max-width: 1000px) { .workshop-grid { grid-template-columns: 1fr; max-width: 800px; } .workshop-panel { border-left: none; border-top: 2px solid #555c79; } .workshop-scene { width: 100%; min-height: 0; aspect-ratio: 1672 / 941; } .workshop-vehicle { width: 55%; left: 41%; bottom: 10%; } .workshop-vehicle.workshop-vehicle-centered { left: 50%; } }
 @media (max-width: 600px) { .arcade-menu { overflow-y: auto; } .mode-image-cards { min-height: 100svh; grid-template-columns: 1fr; justify-items: center; gap: 20px; padding: 72px 18px 28px; } .mode-image-button { width: min(78vw, 310px); } .workshop-heading { align-items: start; } .workshop-heading .secondary { font-size: 10px; padding: 0 10px; min-height: 40px; } .workshop-screen { padding-inline: 10px; } .pilot-tabs button { padding: 8px; flex: 1; } .scene-caption { padding: 5px 8px; } .vehicle-arrows button { min-height: 34px; padding-inline: 9px; } .garage-stats > div { grid-template-columns: 83px 1fr 80px; } }
 @media (prefers-reduced-motion: reduce) { .workshop-vehicle { animation: none; } .workshop-screen button { transition: none; } }

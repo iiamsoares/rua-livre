@@ -73,7 +73,8 @@ export class GarageUI {
     return `<div class="pilot-tabs" aria-label="Jogador em edição">${selectedIds(save).map((id, index) => `<button type="button" data-action="player:${index}" aria-pressed="${this.state.player === index}"><b>J${index + 1}</b> ${escapeHtml(carById(id).name)}<small>${index === 0 ? "WASD + ESPAÇO" : "SETAS + ENTER"}</small></button>`).join("")}</div>`;
   }
   scene(car) {
-    return `<div class="workshop-scene">${carPreviewMarkup(car, "workshop-vehicle", `${car.name} na plataforma da oficina`)}<div class="scene-caption"><strong>${escapeHtml(car.name)}</strong><span>${escapeHtml(car.description)}</span></div>${this.screen === "garage" ? `<div class="vehicle-arrows">${button("prev", "❮", false)}${button("next", "❯", false)}</div>` : ""}</div>`;
+    const vehicleClass = `workshop-vehicle${car.garageCentered ? " workshop-vehicle-centered" : ""}`;
+    return `<div class="workshop-scene">${carPreviewMarkup(car, vehicleClass, `${car.name} na plataforma da oficina`)}<div class="scene-caption"><strong>${escapeHtml(car.name)}</strong><span>${escapeHtml(car.description)}</span></div>${this.screen === "garage" ? `<div class="vehicle-arrows">${button("prev", "❮", false)}${button("next", "❯", false)}</div>` : ""}</div>`;
   }
   render(screen) {
     this.screen = screen;
