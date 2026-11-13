@@ -89,7 +89,8 @@ export const BRASILIA_SPRITES = Object.freeze({
   retaFlagCheckeredRight: sprite("reta", 140, 190, 132, 133, 62, "competition"),
   retaFlagCapitalGreen: sprite("reta", 273, 190, 115, 133, 62, "competition"),
   retaFlagCapitalWhite: sprite("reta", 400, 190, 90, 133, 62, "competition"),
-  retaFinishArch: sprite("reta", 500, 195, 365, 128, 72, "competition"),
+  // Altura física maior para que, com a escala global, os apoios ultrapassem as duas bordas da pista.
+  retaFinishArch: sprite("reta", 500, 195, 365, 128, 100, "competition"),
   retaDistance50: sprite("reta", 940, 348, 130, 120, 42, "sign"),
   retaDistance100: sprite("reta", 1070, 362, 120, 96, 40, "sign"),
   retaDistance200: sprite("reta", 1190, 361, 119, 98, 40, "sign"),

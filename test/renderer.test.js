@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { RaceRenderer, sceneryPositions } from "../js/renderer.js";
+import { RaceRenderer, SCENERY_RENDER_SCALE, sceneryPositions } from "../js/renderer.js";
 import { CAMERA, ENGINE, engineTrack, roadHorizon } from "../js/engines/rua-livre-adapter.js";
 import { createBrasiliaTrack, createRioTrack } from "../js/track.js";
 import { VIEW } from "../js/config.js";
@@ -152,6 +152,26 @@ test("o renderizador usa os quatro atlas sem depender da velocidade do carro", (
   assert.equal(used.size, 4);
   assert.ok(destinations.length > 100);
   assert.ok(destinations.flat().every(Number.isFinite));
+});
+
+test("cenários dobram de escala e o pórtico atravessa toda a pista", () => {
+  assert.equal(SCENERY_RENDER_SCALE, 2);
+  const calls = [];
+  const local = Object.create(RaceRenderer.prototype);
+  local.assets = { sceneryAtlases: { cerrado: {}, eixo: {}, lago: {}, reta: {} } };
+  local.hasSceneryAtlases = true;
+  local.context = {
+    save() {}, restore() {}, beginPath() {}, rect() {}, clip() {},
+    drawImage: (...values) => calls.push(values),
+  };
+  const track = createBrasiliaTrack();
+  const archDistance = track.length * 0.985;
+  const race = { track, totalDistance: track.length * 3, player: { distance: archDistance - 30, lateral: 0 } };
+  const road = local.makeRoad(race);
+  local.drawScenery(race, road);
+  const arch = calls.find((values) => values[1] === 500 && values[2] === 195);
+  assert.ok(arch);
+  assert.ok(arch[7] > local.project(road, 30, 0).half * 2);
 });
 
 test("a malha tem profundidades ordenadas e projeções finitas em toda a volta", () => {

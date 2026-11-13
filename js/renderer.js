@@ -11,6 +11,7 @@ export function sceneryPositions(playerDistance, spacing = 28) {
   const last = Math.floor((playerDistance + RACE_RULES.visibleDistance) / spacing);
   return Array.from({ length: Math.max(0, last - first + 1) }, (_, index) => (last - index) * spacing);
 }
+export const SCENERY_RENDER_SCALE = 2;
 const NPC_GRID = Object.freeze({
   columns: [0, 308, 629, 944, 1254],
   rows: [0, 368, 652, 930, 1254],
@@ -255,7 +256,7 @@ export class RaceRenderer {
       const atlas = this.assets.sceneryAtlases[sprite.atlas];
       if (!atlas) continue;
       const point = this.project(road, distance, object.lane);
-      const height = Math.max(pixel, Math.round(sprite.referenceHeight * object.scale * point.scale / pixel) * pixel);
+      const height = Math.max(pixel, Math.round(sprite.referenceHeight * object.scale * point.scale * SCENERY_RENDER_SCALE / pixel) * pixel);
       const width = Math.max(pixel, Math.round(height * sprite.source.width / sprite.source.height / pixel) * pixel);
       const x = Math.round((point.x - width * sprite.anchor.x) / pixel) * pixel;
       const y = Math.round((point.y - height * sprite.anchor.y) / pixel) * pixel;
