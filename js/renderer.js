@@ -41,6 +41,29 @@ function spriteCell(sheet, index, grid = null, rows = 4) {
   return { x: x0 + inset, y: y0 + inset, width: x1 - x0 - inset * 2, height: y1 - y0 - inset * 2 };
 }
 
+export function playerCarFrameIndex(car, player) {
+  if (car.spriteLayout === "direction-columns") {
+    const column = player.steerVisual < -0.12 ? 1 : player.steerVisual > 0.12 ? 2 : 3;
+    return (player.boosting ? 4 : 0) + column;
+  }
+  const row = car.spriteRows === 3
+    ? (player.steerVisual < -0.12 ? 0 : player.steerVisual > 0.12 ? 2 : 1)
+    : (player.steerVisual < -0.45 ? 0 : player.steerVisual < -0.08 ? 1 : player.steerVisual > 0.45 ? 3 : 2);
+  const column = player.speed > 10 ? Math.floor(player.distance * 0.8) % 4 : 2;
+  return row * 4 + column;
+}
+
+export function peerCarFrameIndex(car) {
+  return car.spriteLayout === "direction-columns" ? 3 : car.spriteRows === 3 ? 6 : 10;
+}
+
+function carSpriteFrame(sheet, car, index) {
+  const configured = car.spriteFrames?.[index];
+  return configured
+    ? { x: configured[0], y: configured[1], width: configured[2], height: configured[3] }
+    : spriteCell(sheet, index, null, car.spriteRows);
+}
+
 function loadImage(source) {
   if (!source) return Promise.resolve(null);
   return new Promise((resolve) => {
@@ -425,9 +448,10 @@ export class RaceRenderer {
         const car = PLAYER_CARS.find((car) => car.id === item.entity.carId) || PLAYER_CARS[0];
         const sheet = this.assets.playerCars[car.id];
         if (sheet) {
-          const frame = spriteCell(sheet, car.spriteRows === 3 ? 6 : 10, null, car.spriteRows);
+          const frame = carSpriteFrame(sheet, car, peerCarFrameIndex(car));
           const size = 64 * point.scale;
-          this.context.drawImage(sheet, frame.x, frame.y, frame.width, frame.height, point.x - size / 2, point.y - size, size, size);
+          const height = car.spriteLayout === "direction-columns" ? size * frame.height / frame.width : size;
+          this.context.drawImage(sheet, frame.x, frame.y, frame.width, frame.height, point.x - size / 2, point.y - height, size, height);
         }
       } else this.drawWorldCar(point, item.entity, item.rival);
       this.context.restore();
@@ -493,13 +517,10 @@ export class RaceRenderer {
       }
     }
     if (this.playerSprite) {
-      const row = this.playerCar.spriteRows === 3
-        ? (player.steerVisual < -0.12 ? 0 : player.steerVisual > 0.12 ? 2 : 1)
-        : (player.steerVisual < -0.45 ? 0 : player.steerVisual < -0.08 ? 1 : player.steerVisual > 0.45 ? 3 : 2);
-      const column = player.speed > 10 ? Math.floor(player.distance * 0.8) % 4 : 2;
-      const frame = spriteCell(this.playerSprite, row * 4 + column, null, this.playerCar.spriteRows);
+      const frame = carSpriteFrame(this.playerSprite, this.playerCar, playerCarFrameIndex(this.playerCar, player));
+      const height = this.playerCar.spriteLayout === "direction-columns" ? 64 * frame.height / frame.width : 64;
       context.rotate((player.drifting ? -0.045 : 0) * Math.sign(player.steerVisual || 1));
-      context.drawImage(this.playerSprite, frame.x, frame.y, frame.width, frame.height, -32, -64, 64, 64);
+      context.drawImage(this.playerSprite, frame.x, frame.y, frame.width, frame.height, -32, -height, 64, height);
     } else {
       context.fillStyle = "#d7dde5"; context.fillRect(-36, -35, 72, 57);
       context.fillStyle = "#111928"; context.fillRect(-24, -29, 48, 22);

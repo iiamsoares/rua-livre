@@ -13,6 +13,8 @@
 .workshop-heading .eyebrow { margin-bottom: 7px; font-family: inherit; color: var(--yellow); }
 .workshop-grid { max-width: 1600px; margin: auto; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(340px, 1fr); border: 2px solid #555c79; box-shadow: 5px 5px #171c30; background: transparent; }
 .workshop-scene { position: relative; min-height: 560px; background: transparent; isolation: isolate; overflow: hidden; }
+.car-preview-crop { display: block; position: relative; overflow: hidden; image-rendering: pixelated; }
+.car-preview-crop > img { position: absolute; max-width: none !important; margin: 0 !important; object-fit: fill !important; transform: none !important; filter: none !important; image-rendering: pixelated; }
 .workshop-vehicle { position: absolute; width: 66%; height: auto; object-fit: contain; left: 60%; bottom: 12%; transform: translateX(-50%); image-rendering: pixelated; filter: drop-shadow(0 12px 8px #000a); animation: vehicle-arrive .18s ease-out; }
 .scene-caption { position: absolute; left: 3%; bottom: 3%; padding: 10px 14px; border-left: 4px solid var(--lime); background: #090d19ed; max-width: 92%; }
 .scene-caption strong, .scene-caption span { display: block; }
@@ -25,9 +27,10 @@
 .workshop-panel > button { width: 100%; margin-top: 10px; font-family: inherit; font-size: 13px; transform: none; }
 .workshop-screen button:disabled { cursor: not-allowed; opacity: .5; transform: none; filter: none; }
 .workshop-screen button[aria-pressed="true"] { border-color: var(--yellow); color: var(--lime); box-shadow: inset 0 0 14px #b5ff3b12; }
-.vehicle-catalog { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.vehicle-catalog { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-height: 326px; overflow-y: auto; padding-right: 4px; scrollbar-color: var(--yellow) #080b16; }
 .vehicle-catalog button { padding: 5px; background: #080b16; border: 2px solid #4a526d; cursor: pointer; min-width: 0; }
-.vehicle-catalog img { width: 100%; height: 62px; object-fit: contain; image-rendering: pixelated; }
+.vehicle-thumbnail:not(.car-preview-crop) { width: 100%; height: 62px; object-fit: contain; image-rendering: pixelated; }
+.vehicle-thumbnail.car-preview-crop { width: auto; height: 62px; max-width: 100%; margin-inline: auto; }
 .vehicle-catalog strong, .vehicle-catalog small { display: block; font-size: 10px; }
 .vehicle-catalog small { margin-top: 5px; color: #a9b3ca; font-size: 8px; }
 .garage-stats { display: grid; gap: 13px; margin: 24px 0; }

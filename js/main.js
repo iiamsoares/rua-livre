@@ -9,6 +9,7 @@ import { PixelSpeedometer } from "./speedometer.js";
 import { createVersus, updateVersus } from "./versus.js";
 import { GarageUI } from "./garage.js";
 import { canStart, selectedIds } from "./garage-model.js";
+import { carPreviewMarkup } from "./car-preview.js";
 
 const element = (selector) => document.querySelector(selector);
 const elements = (selector) => [...document.querySelectorAll(selector)];
@@ -64,8 +65,7 @@ function ordinal(position) { return `${position}º`; }
 
 function updateProfile() {
   const car = PLAYER_CARS.find((item) => item.id === save.carId) || PLAYER_CARS[0];
-  element(".title-car").src = car.frontAsset;
-  element(".title-car").alt = `${car.name}, o carro do jogador`;
+  element("#titleCarMount").innerHTML = carPreviewMarkup(car, "title-car", `${car.name}, o carro do jogador`);
   element("#creditsLabel").textContent = formatMoney(save.credits);
   element("#bestLabel").textContent = save.bestPosition == null ? "—" : `${ordinal(save.bestPosition)} · ${formatTime(save.bestTime || 0)}`;
   element("#soundButton").textContent = save.audio ? "SOM ON" : "SOM OFF";

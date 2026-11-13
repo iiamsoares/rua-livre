@@ -1,6 +1,7 @@
 import { PLAYER_CARS, UPGRADE_COSTS, formatMoney } from "./config.js";
 import { carStats } from "./race.js";
 import { buyPreparation, buyVehicle, canStart, createSelection, ownsCar, selectedIds, selectVehicle, vehiclePrice } from "./garage-model.js";
+import { carPreviewMarkup } from "./car-preview.js";
 
 const carById = (id) => PLAYER_CARS.find((car) => car.id === id) || PLAYER_CARS[0];
 const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
@@ -72,7 +73,7 @@ export class GarageUI {
     return `<div class="pilot-tabs" aria-label="Jogador em edição">${selectedIds(save).map((id, index) => `<button type="button" data-action="player:${index}" aria-pressed="${this.state.player === index}"><b>J${index + 1}</b> ${escapeHtml(carById(id).name)}<small>${index === 0 ? "WASD + ESPAÇO" : "SETAS + ENTER"}</small></button>`).join("")}</div>`;
   }
   scene(car) {
-    return `<div class="workshop-scene"><img class="workshop-vehicle" src="${car.frontAsset}" alt="${escapeHtml(car.name)} na plataforma da oficina" /><div class="scene-caption"><strong>${escapeHtml(car.name)}</strong><span>${escapeHtml(car.description)}</span></div>${this.screen === "garage" ? `<div class="vehicle-arrows">${button("prev", "❮", false)}${button("next", "❯", false)}</div>` : ""}</div>`;
+    return `<div class="workshop-scene">${carPreviewMarkup(car, "workshop-vehicle", `${car.name} na plataforma da oficina`)}<div class="scene-caption"><strong>${escapeHtml(car.name)}</strong><span>${escapeHtml(car.description)}</span></div>${this.screen === "garage" ? `<div class="vehicle-arrows">${button("prev", "❮", false)}${button("next", "❯", false)}</div>` : ""}</div>`;
   }
   render(screen) {
     this.screen = screen;
@@ -93,7 +94,7 @@ export class GarageUI {
     const cost = UPGRADE_COSTS[save.preparation];
     const next = carStats(Math.min(3, save.preparation + 1));
     target.innerHTML = `<div class="workshop-heading"><div><p class="eyebrow">${this.state.mode === "versus" ? "VERSUS LOCAL" : "CORRIDA SOLO"} / ${screen === "garage" ? "02" : "03"}</p><h2>${screen === "garage" ? "Garagem" : "Preparação"} <span>/ J${this.state.player + 1}</span></h2></div>${button(screen === "garage" ? "mode" : "garage", screen === "garage" ? "← MODOS" : "← GARAGEM")}</div>${this.players(save)}<div class="workshop-grid">${this.scene(car)}<aside class="workshop-panel">${screen === "garage" ? `
-      <p class="panel-kicker">ESCOLHA SEU CARRO</p><div class="vehicle-catalog">${PLAYER_CARS.map((item) => `<button data-action="car:${item.id}" aria-pressed="${item.id === car.id}" aria-label="Ver ${escapeHtml(item.name)}"><img src="${item.frontAsset}" alt=""/><strong>${escapeHtml(item.name)}</strong><small>${ownsCar(save, item) ? "DISPONÍVEL" : formatMoney(vehiclePrice(item))}</small></button>`).join("")}</div>
+      <p class="panel-kicker">ESCOLHA SEU CARRO</p><div class="vehicle-catalog">${PLAYER_CARS.map((item) => `<button data-action="car:${item.id}" aria-pressed="${item.id === car.id}" aria-label="Ver ${escapeHtml(item.name)}">${carPreviewMarkup(item, "vehicle-thumbnail", "")}<strong>${escapeHtml(item.name)}</strong><small>${ownsCar(save, item) ? "DISPONÍVEL" : formatMoney(vehiclePrice(item))}</small></button>`).join("")}</div>
       <div class="garage-stats">${[["VELOCIDADE", stats.topSpeed, "km/h", 220], ["ACELERAÇÃO", stats.acceleration, "km/h/s", 90], ["CONTROLE", stats.steering, "", 1.5]].map(([label, value, unit, max]) => `<div><span>${label}</span><meter min="0" max="${max}" value="${value}" aria-label="${label}"></meter><b>${Number(value.toFixed(2))} <small>${unit}</small></b></div>`).join("")}</div>
       <div class="vehicle-details"><h3>${escapeHtml(car.name)}</h3><p>${escapeHtml(car.description)}</p><div><b>${price ? formatMoney(price) : "INCLUÍDO · R$ 0"}</b><span>${owned ? "LIBERADO" : "BLOQUEADO"}</span></div><p>Estágio instalado: <strong>${save.preparation}/3</strong> · pacote compartilhado</p></div>
       ${!owned ? button("buy", `COMPRAR · ${formatMoney(price)}`, save.credits < price, "primary") : button("select", selected ? "✓ SELECIONADO" : `SELECIONAR PARA J${this.state.player + 1}`, selected, "primary")}

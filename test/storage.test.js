@@ -23,4 +23,6 @@ test("save legado preserva créditos e nível do motor", () => {
 test("escolha de carro válida permanece salva", () => {
   assert.equal(sanitizeSave({ carId: "chevette" }).carId, "chevette");
   assert.equal(sanitizeSave({ carId: "vectra" }).carId, "vectra");
+  assert.equal(sanitizeSave({ carId: "civic-g8" }).carId, "civic-g8");
+  assert.equal(sanitizeSave({ carId: "uno-mille" }).carId, "uno-mille");
 });
