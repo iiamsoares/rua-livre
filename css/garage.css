@@ -1,19 +1,26 @@
 :root { --workshop-background: url("../assets/scenery/Garagem Pixel Art Rua Livre.png"); }
-.workshop-screen, .arcade-menu { padding: 24px clamp(16px, 3vw, 48px) 18px; background: #080a13; font-family: "Courier New", monospace; }
+.workshop-screen, .arcade-menu { padding: 24px clamp(16px, 3vw, 48px) 18px; font-family: "Courier New", monospace; }
+.arcade-menu { background: #080a13; }
+.workshop-screen {
+  min-height: calc(100vh - 76px);
+  background:
+    linear-gradient(90deg, #0609142b 0 60%, #060914a6 100%),
+    var(--workshop-background) center / cover no-repeat;
+}
 .workshop-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; max-width: 1600px; margin: 0 auto 18px; }
 .workshop-heading h2 { margin: 0; font: italic 900 clamp(26px, 3vw, 42px)/1.1 "Arial Narrow", sans-serif; text-transform: uppercase; }
 .workshop-heading h2 span { color: #9ca5bc; font-size: .65em; }
 .workshop-heading .eyebrow { margin-bottom: 7px; font-family: inherit; color: var(--yellow); }
-.workshop-grid { max-width: 1600px; margin: auto; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(340px, 1fr); border: 2px solid #555c79; box-shadow: 5px 5px #171c30; background: #0a0e1b; }
-.workshop-scene { position: relative; min-height: 560px; background: var(--workshop-background) center / cover no-repeat; isolation: isolate; overflow: hidden; }
-.workshop-vehicle { position: absolute; width: 66%; height: auto; object-fit: contain; left: 38%; bottom: 12%; transform: translateX(-50%); image-rendering: pixelated; filter: drop-shadow(0 12px 8px #000a); animation: vehicle-arrive .18s ease-out; }
+.workshop-grid { max-width: 1600px; margin: auto; display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(340px, 1fr); border: 2px solid #555c79; box-shadow: 5px 5px #171c30; background: transparent; }
+.workshop-scene { position: relative; min-height: 560px; background: transparent; isolation: isolate; overflow: hidden; }
+.workshop-vehicle { position: absolute; width: 66%; height: auto; object-fit: contain; left: 60%; bottom: 12%; transform: translateX(-50%); image-rendering: pixelated; filter: drop-shadow(0 12px 8px #000a); animation: vehicle-arrive .18s ease-out; }
 .scene-caption { position: absolute; left: 3%; bottom: 3%; padding: 10px 14px; border-left: 4px solid var(--lime); background: #090d19ed; max-width: 92%; }
 .scene-caption strong, .scene-caption span { display: block; }
 .scene-caption strong { font: italic 900 clamp(20px, 2.5vw, 34px) "Arial Narrow", sans-serif; }
 .scene-caption span { color: #d9ddea; font-size: clamp(9px, .85vw, 12px); margin-top: 4px; }
 .vehicle-arrows { position: absolute; top: 56%; left: 3%; right: 3%; display: flex; justify-content: space-between; pointer-events: none; }
 .vehicle-arrows button { pointer-events: auto; border-color: var(--yellow); color: var(--yellow); padding: 0 14px; min-height: 42px; font-size: 24px; }
-.workshop-panel { padding: clamp(16px, 2vw, 28px); border-left: 2px solid #555c79; background: linear-gradient(135deg, #151827, #080b16); }
+.workshop-panel { padding: clamp(16px, 2vw, 28px); border-left: 2px solid #555c79; background: linear-gradient(135deg, #151827f2, #080b16f7); }
 .workshop-panel h3 { margin: 0 0 10px; font-size: 22px; font-style: italic; }
 .workshop-panel > button { width: 100%; margin-top: 10px; font-family: inherit; font-size: 13px; transform: none; }
 .workshop-screen button:disabled { cursor: not-allowed; opacity: .5; transform: none; filter: none; }
