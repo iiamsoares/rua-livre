@@ -3,9 +3,10 @@ const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
 })[char]);
 
 export function carPreviewMarkup(car, className = "", alt = car.name) {
-  if (!car.previewCrop) {
+  if (car.frontAsset) {
     return `<img class="${escapeHtml(className)}" src="${escapeHtml(car.frontAsset)}" alt="${escapeHtml(alt)}" />`;
   }
+  if (!car.previewCrop) return "";
   const crop = car.previewCrop;
   const sheetWidth = crop.sheetWidth || 1254;
   const sheetHeight = crop.sheetHeight || 1254;
