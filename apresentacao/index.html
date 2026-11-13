@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Apresentação interativa do jogo Rua Livre e de sua evolução desde o primeiro protótipo." />
+    <title>Rua Livre | Apresentação do projeto</title>
+    <link rel="stylesheet" href="apresentacao.css" />
+  </head>
+  <body>
+    <main class="deck" aria-label="Apresentação do projeto Rua Livre">
+      <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+
+      <section class="slide slide-cover is-active" data-title="Rua Livre" aria-label="Slide 1 de 12">
+        <div class="cover-bg" aria-hidden="true"></div>
+        <div class="cover-copy">
+          <p class="eyebrow">APRESENTAÇÃO DO PROJETO</p>
+          <img class="cover-logo" src="../assets/ui/logo_ruaLivre.png" alt="Rua Livre, Brasil em alta rotação" />
+          <h1>Um arcade brasileiro<br />em evolução</h1>
+          <p class="lead">Como o protótipo virou um jogo de corrida 16 bits com garagem, progressão, cenário dinâmico e versus local.</p>
+          <p class="edition">Estado do projeto em novembro de 2026</p>
+          <p class="institution"><strong>UNICEPLAC</strong><span>Centro Universitário</span></p>
+        </div>
+        <img class="cover-car" src="../assets/cars/player/up_frente.png" alt="UP TSI em pixel art" />
+      </section>
+
+      <section class="slide slide-current" data-title="O jogo hoje" aria-label="Slide 2 de 12">
+        <header class="slide-heading">
+          <p class="eyebrow">VISÃO ATUAL</p>
+          <h2>O jogo hoje</h2>
+          <p>Rua Livre combina corrida pseudo-3D, carros brasileiros e progressão de garagem em uma experiência jogável no navegador.</p>
+        </header>
+        <figure class="frame current-frame">
+          <img src="assets/corrida-atual.png" alt="Corrida atual em Brasília com HUD, cenário lateral e pórtico" />
+          <figcaption>Brasília, Circuito do Cerrado</figcaption>
+        </figure>
+        <div class="number-line" aria-label="Resumo do jogo atual">
+          <div><strong>10</strong><span>carros jogáveis</span></div>
+          <div><strong>3</strong><span>voltas por corrida</span></div>
+          <div><strong>3 + 12</strong><span>rivais e carros civis</span></div>
+          <div><strong>2</strong><span>modos de jogo</span></div>
+        </div>
+      </section>
+
+      <section class="slide slide-flow" data-title="Fluxo de uma sessão" aria-label="Slide 3 de 12">
+        <header class="slide-heading compact">
+          <p class="eyebrow">EXPERIÊNCIA COMPLETA</p>
+          <h2>Fluxo de uma sessão</h2>
+          <p>O jogo saiu de uma corrida isolada e ganhou um ciclo com escolha, preparação, disputa e recompensa.</p>
+        </header>
+        <ol class="flow-track">
+          <li><span>01</span><strong>Tela inicial</strong><small>Jogar ou abrir a garagem</small></li>
+          <li><span>02</span><strong>Modo</strong><small>Solo ou versus local</small></li>
+          <li><span>03</span><strong>Garagem</strong><small>Escolha independente de carro</small></li>
+          <li><span>04</span><strong>Preparação</strong><small>Compra de estágio com créditos</small></li>
+          <li><span>05</span><strong>Corrida</strong><small>Três voltas em Brasília</small></li>
+          <li><span>06</span><strong>Resultado</strong><small>Prêmio, recorde e nova tentativa</small></li>
+        </ol>
+        <div class="flow-visuals" aria-hidden="true">
+          <img src="../assets/tela_inicial/background.png" alt="" />
+          <img src="../assets/scenery/Garagem Pixel Art Rua Livre.png" alt="" />
+          <img src="assets/corrida-atual.png" alt="" />
+        </div>
+      </section>
+
+      <section class="slide slide-race" data-title="A corrida" aria-label="Slide 4 de 12">
+        <div class="race-image" aria-hidden="true"></div>
+        <div class="race-copy">
+          <p class="eyebrow">OBJETIVO E CONTROLES</p>
+          <h2>A corrida</h2>
+          <p class="lead">Completar três voltas, administrar o carro e terminar no pódio.</p>
+          <div class="control-list">
+            <p><kbd>W</kbd><kbd>↑</kbd><span>Acelerar</span></p>
+            <p><kbd>S</kbd><kbd>↓</kbd><span>Frear e iniciar derrapagem</span></p>
+            <p><kbd>A D</kbd><kbd>← →</kbd><span>Virar e compensar curvas</span></p>
+            <p><kbd>ESPAÇO</kbd><kbd>SHIFT</kbd><span>Ativar o nitro</span></p>
+          </div>
+          <p class="race-note">O HUD acompanha posição, volta, tempo, velocidade, integridade, nitro e traçado.</p>
+        </div>
+      </section>
+
+      <section class="slide slide-mechanics" data-title="Mecânicas de pilotagem" aria-label="Slide 5 de 12">
+        <header class="slide-heading compact">
+          <p class="eyebrow">PILOTAGEM ARCADE</p>
+          <h2>Mecânicas de pilotagem</h2>
+        </header>
+        <div class="mechanics-road">
+          <img src="../assets/scenery/brasilia_cenario.png" alt="Panorama pixel art de Brasília" />
+          <div class="mechanic mechanic-a"><b>01</b><strong>Perspectiva pseudo-3D</strong><span>A pista cresce com a aproximação da câmera e preserva o recorte dos morros.</span></div>
+          <div class="mechanic mechanic-b"><b>02</b><strong>Curvas com força lateral</strong><span>A estrada desloca o carro. O jogador precisa compensar para manter a linha.</span></div>
+          <div class="mechanic mechanic-c"><b>03</b><strong>Derrapagem controlada</strong><span>Frear durante a curva ajuda a segurar o traçado e produz poeira nas bordas.</span></div>
+          <div class="mechanic mechanic-d"><b>04</b><strong>Colisão sólida</strong><span>Rivais, tráfego e jogadores bloqueiam a faixa. O carro não atravessa o veículo à frente.</span></div>
+        </div>
+      </section>
+
+      <section class="slide slide-systems" data-title="Desafio e progressão" aria-label="Slide 6 de 12">
+        <header class="slide-heading compact">
+          <p class="eyebrow">MECÂNICAS CRIADAS</p>
+          <h2>Desafio e progressão</h2>
+          <p>Cada sistema tem efeito direto na corrida e retorna ao ciclo da garagem.</p>
+        </header>
+        <div class="system-composition">
+          <div class="system-main">
+            <img src="../assets/scenery/turbo.png" alt="Garrafa de nitro" />
+            <h3>Nitro</h3>
+            <p>A coleta recarrega o recurso. O uso aumenta aceleração e velocidade final.</p>
+          </div>
+          <div class="system-main">
+            <img src="../assets/scenery/buraco_estrada.png" alt="Buraco em pixel art" />
+            <h3>Integridade</h3>
+            <p>Buracos e colisões causam dano. Chegar a zero encerra a corrida.</p>
+          </div>
+          <div class="system-main">
+            <img src="../assets/ui/seta_inimigo.png" alt="Seta que identifica um rival" />
+            <h3>Disputa</h3>
+            <p>Três rivais contam para a posição. Doze veículos civis criam tráfego sem alterar a classificação.</p>
+          </div>
+          <div class="reward-copy">
+            <span class="reward-value">R$ 250</span>
+            <h3>Bônus de corrida limpa</h3>
+            <p>Colocação e cuidado com o carro geram créditos para os estágios de preparação.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide slide-modes" data-title="Solo e versus local" aria-label="Slide 7 de 12">
+        <header class="slide-heading compact">
+          <p class="eyebrow">DOIS MODOS</p>
+          <h2>Solo e versus local</h2>
+          <p>A mesma pista atende uma corrida individual e uma disputa para duas pessoas no mesmo teclado.</p>
+        </header>
+        <div class="mode-pair">
+          <article>
+            <img src="../assets/tela_modo/botao_corrida_modo_solo.jpg" alt="Botão do modo corrida solo" />
+            <h3>Corrida solo</h3>
+            <p>Um jogador enfrenta os rivais e o trânsito. O resultado atualiza créditos e recordes.</p>
+          </article>
+          <article>
+            <img src="../assets/tela_modo/botao_corrida_coop.jpg" alt="Botão do modo versus local" />
+            <h3>Versus local</h3>
+            <p>Tela dividida, câmeras independentes e colisão entre jogadores. O amistoso não altera o saldo.</p>
+          </article>
+        </div>
+        <div class="versus-controls"><strong>J1</strong> WASD e Espaço <span></span><strong>J2</strong> Setas e Enter</div>
+      </section>
+
+      <section class="slide slide-garage" data-title="Garagem e frota" aria-label="Slide 8 de 12">
+        <div class="garage-shot">
+          <img src="assets/garagem-atual.png" alt="Garagem atual com o Civic G8 selecionado" />
+        </div>
+        <div class="garage-copy">
+          <p class="eyebrow">PROGRESSÃO</p>
+          <h2>Garagem e frota</h2>
+          <p>A oficina virou uma tela funcional com seleção, atributos, créditos e preparação persistente.</p>
+          <div class="garage-facts">
+            <p><strong>10 modelos</strong><span>UP TSI, Chevette, Vectra, Civic, Gol, Jetta, Marea, Opala, Santana e Uno.</span></p>
+            <p><strong>3 estágios</strong><span>Motor e pneus usam os efeitos reais do sistema atual. O acerto individual permanece planejado.</span></p>
+            <p><strong>Save local</strong><span>Carro, preparação, créditos e recordes continuam salvos no navegador.</span></p>
+          </div>
+          <div class="garage-cars" aria-hidden="true">
+            <img src="../assets/cars/player/up_frente.png" alt="" />
+            <img src="../assets/cars/player/civic_frente.png" alt="" />
+            <img src="../assets/cars/player/opala_frente.png" alt="" />
+            <img src="../assets/cars/player/unoMile_frente.png" alt="" />
+          </div>
+        </div>
+      </section>
+
+      <section class="slide slide-brasilia" data-title="Brasília em cinco trechos" aria-label="Slide 9 de 12">
+        <div class="brasilia-bg" aria-hidden="true"></div>
+        <header class="slide-heading inverse">
+          <p class="eyebrow">CIRCUITO DO CERRADO</p>
+          <h2>Brasília em cinco trechos</h2>
+          <p>A paisagem evolui durante a volta sem telas de carregamento. Objetos laterais usam a mesma projeção da pista.</p>
+        </header>
+        <div class="zone-track">
+          <div style="--size: 18%"><strong>Cerrado</strong><span>0 a 18%</span></div>
+          <div style="--size: 22%"><strong>Avenida dos Ipês</strong><span>18 a 40%</span></div>
+          <div style="--size: 25%"><strong>Eixo Monumental</strong><span>40 a 65%</span></div>
+          <div style="--size: 20%"><strong>Orla do Paranoá</strong><span>65 a 85%</span></div>
+          <div style="--size: 15%"><strong>Reta da Capital</strong><span>85 a 100%</span></div>
+        </div>
+        <p class="zone-note">Árvores, ipês, placas, postes, defensas, pétalas e poeira seguem posições determinísticas no mundo.</p>
+      </section>
+
+      <section class="slide slide-immersion" data-title="Imersão 16 bits" aria-label="Slide 10 de 12">
+        <header class="slide-heading compact">
+          <p class="eyebrow">LINGUAGEM AUDIOVISUAL</p>
+          <h2>Imersão 16 bits</h2>
+          <p>A apresentação visual e o áudio passaram a responder ao estado real da corrida.</p>
+        </header>
+        <div class="immersion-layout">
+          <div class="hud-piece speed-piece">
+            <img src="../assets/ui/velocimetro.png" alt="Velocímetro pixelado" />
+            <strong>HUD em sprites</strong>
+            <span>Velocímetro, minimapa e barras usam as artes finais.</span>
+          </div>
+          <div class="hud-piece map-piece">
+            <img src="../assets/ui/mini_mapa.png" alt="Minimapa do circuito" />
+            <strong>Tela cheia</strong>
+            <span>A corrida ocupa o viewport para aproximar o jogador da pista.</span>
+          </div>
+          <div class="audio-piece">
+            <div class="rpm-layers" aria-hidden="true"><i></i><i></i><i></i></div>
+            <h3>Motor em três camadas</h3>
+            <p>Baixa, média e alta rotação se misturam conforme velocidade, marcha e nitro.</p>
+            <p>Os dez modelos recebem perfis próprios de altura, volume e timbre. A música original permanece ativa.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide slide-evolution" data-title="Do protótipo ao jogo atual" aria-label="Slide 11 de 12">
+        <header class="slide-heading compact">
+          <p class="eyebrow">EVOLUÇÃO DO PROJETO</p>
+          <h2>Do protótipo ao jogo atual</h2>
+        </header>
+        <div class="comparison">
+          <figure>
+            <span>PRIMEIRO PROTÓTIPO</span>
+            <img src="assets/prototipo-corrida.png" alt="Primeiro protótipo da corrida com cenário do Rio" />
+            <figcaption>Uma corrida, três carros e interface inicial.</figcaption>
+          </figure>
+          <figure>
+            <span>JOGO ATUAL</span>
+            <img src="assets/corrida-atual.png" alt="Versão atual da corrida no circuito de Brasília" />
+            <figcaption>Motor retrabalhado, cenário dinâmico, HUD final e multiplayer.</figcaption>
+          </figure>
+        </div>
+        <ol class="milestones">
+          <li><b>1</b><span>Canvas inicial</span></li>
+          <li><b>2</b><span>Motor modular</span></li>
+          <li><b>3</b><span>Colisões e nitro</span></li>
+          <li><b>4</b><span>Garagem e créditos</span></li>
+          <li><b>5</b><span>Versus local</span></li>
+          <li><b>6</b><span>Brasília dinâmica</span></li>
+          <li><b>7</b><span>10 carros e áudio novo</span></li>
+        </ol>
+      </section>
+
+      <section class="slide slide-finish" data-title="Estado atual" aria-label="Slide 12 de 12">
+        <div class="finish-copy">
+          <p class="eyebrow">CONCLUSÃO</p>
+          <h2>Um jogo jogável,<br />com espaço para crescer</h2>
+          <p>O Rua Livre já oferece uma corrida completa, progressão persistente, dois modos e identidade brasileira. A base técnica permite adicionar novos mapas e veículos sem substituir o motor central.</p>
+          <div class="next-steps">
+            <h3>Próximos passos</h3>
+            <p>Balancear a dirigibilidade de cada carro</p>
+            <p>Produzir cenários próprios para Salvador e Manaus</p>
+            <p>Aprimorar efeitos sonoros e testes com jogadores</p>
+          </div>
+          <a class="game-link" href="../index.html">ABRIR O JOGO</a>
+          <p class="institution"><strong>UNICEPLAC</strong><span>Centro Universitário</span></p>
+        </div>
+        <img class="finish-logo" src="../assets/ui/logo_ruaLivre.png" alt="Rua Livre, Brasil em alta rotação" />
+        <img class="finish-car" src="../assets/cars/player/opala_frente.png" alt="Opala em pixel art" />
+      </section>
+
+      <nav class="deck-nav" aria-label="Navegação entre slides">
+        <button id="previousButton" type="button" aria-label="Slide anterior">‹</button>
+        <p><span id="currentSlide">01</span><i></i><span id="totalSlides">12</span></p>
+        <button id="nextButton" type="button" aria-label="Próximo slide">›</button>
+        <button id="fullscreenButton" class="fullscreen-button" type="button" aria-label="Alternar tela cheia">⛶</button>
+      </nav>
+
+      <aside id="overview" class="overview" aria-label="Visão geral dos slides" aria-hidden="true"></aside>
+    </main>
+    <script src="apresentacao.js"></script>
+  </body>
+</html>

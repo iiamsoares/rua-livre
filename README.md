@@ -12,6 +12,8 @@ node tools/dev-server.mjs
 
 Depois, abra `http://127.0.0.1:4173`. Também é possível usar `npm.cmd run dev` no Windows.
 
+A apresentação atual do projeto fica em `apresentacao/index.html` e pode ser acessada em `http://127.0.0.1:4173/apresentacao/index.html`. Use as setas, Espaço ou Page Up e Page Down para navegar. A tecla `F` alterna a tela cheia e `O` abre a visão geral dos slides.
+
 ## Controles
 
 - `↑` ou `W`: acelerar
