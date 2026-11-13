@@ -378,7 +378,7 @@ export class RaceRenderer {
       context.save();
       context.beginPath(); context.rect(0, 0, VIEW.width, Math.max(0, center.clipY)); context.clip();
       if (this.assets?.pothole) {
-        const width = Math.max(3, Math.round(31 * center.scale / 1.5) * 1.5);
+        const width = Math.max(3, Math.round(62 * center.scale / 1.5) * 1.5);
         const height = Math.max(1.5, Math.round(width * 0.34 / 1.5) * 1.5);
         context.drawImage(
           this.assets.pothole,
@@ -438,7 +438,7 @@ export class RaceRenderer {
       if (point.y > point.clipY) continue;
       const size = Math.max(2, 12 * point.scale);
       if (this.assets.turboPickup) {
-        const height = size * 2.35;
+        const height = size * 4.7;
         const width = height * TURBO_CROP.width / TURBO_CROP.height;
         this.context.drawImage(
           this.assets.turboPickup,
