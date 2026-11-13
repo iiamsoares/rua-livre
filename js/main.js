@@ -82,6 +82,7 @@ function startRace() {
   if (!canStart(save, garage.state.mode)) { showScreen("garage"); return; }
   void enterFullscreen();
   const localMode = garage.state.mode === "versus";
+  audio.setCar(save.carId);
   audio.unlock();
   input.clear();
   race = createRace(save, track, Math.floor(performance.now() * 1000));
@@ -219,7 +220,10 @@ function frame(now) {
       updateHud(versus.races[1], "Two", speedometerTwo);
     }
     updateHud();
-    audio.update(race.player.speed, !race.paused && !race.finished && race.countdown === 0);
+    audio.update(race.player.speed, !race.paused && !race.finished && race.countdown === 0, {
+      boosting: race.player.boosting,
+      engineActive: !race.paused && !race.finished,
+    });
   }
   requestAnimationFrame(frame);
 }

@@ -55,7 +55,13 @@ Os testes cobrem pista, física, largada, pausa, chegada, premiação e migraç�
 - HUD de alto contraste, zebras largas, placas de curva, palmeiras e efeitos de derrapagem/nitro.
 - Três rivais com aceleração de largada; aceleração e direção do jogador mais rápidas. Carros, garagem, colisões e saves preservados.
 - Trânsito civil com 12 veículos, separado dos três rivais, com velocidades entre 60 e 147 km/h. Os carros ultrapassados reaparecem além da câmera, com espaçamento de entrada na mesma faixa.
-- Trilha sintetizada original em quatro compassos, com baixo, melodia e pulso rítmico. O botão SOM controla música e efeitos; a pausa silencia ambos.
+- Trilha sintetizada original em quatro compassos, com baixo, melodia e pulso rítmico. O motor mistura três loops de rotação em tempo real, simula a queda de giro nas trocas de marcha e aplica timbre próprio a cada carro. O botão SOM controla música e efeitos; a pausa silencia ambos.
+
+### Áudio dos motores
+
+O sistema em `js/audio.js` usa Web Audio API nativa para cruzar três faixas de rotação, alterar altura e filtro conforme velocidade, marcha e nitro, e diferenciar os modelos por perfil de timbre. Se os WAVs não puderem ser carregados, o oscilador sintetizado anterior é mantido automaticamente como fallback.
+
+Os loops de motor são do pacote [racing car engine sound loops](https://opengameart.org/content/racing-car-engine-sound-loops), de domasx2, disponibilizado sob [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). A procedência completa acompanha os arquivos em `assets/audio/engine/README.md`.
 
 ## Cenários dinâmicos
 
