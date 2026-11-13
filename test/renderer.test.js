@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { RaceRenderer, sceneryPositions } from "../js/renderer.js";
 import { CAMERA, ENGINE, engineTrack, roadHorizon } from "../js/engines/rua-livre-adapter.js";
-import { createRioTrack } from "../js/track.js";
+import { createBrasiliaTrack, createRioTrack } from "../js/track.js";
 import { VIEW } from "../js/config.js";
 
 const renderer = Object.create(RaceRenderer.prototype);
@@ -45,6 +45,14 @@ test("o cenário permanece ancorado no mundo e aproxima-se ao avançar", () => {
   assert.ok(next.y > first.y);
   assert.ok(next.scale > first.scale);
   assert.ok(!sceneryPositions(113).includes(112));
+});
+
+test("o mapa de Brasília preserva a geometria e seleciona o ambiente próprio", () => {
+  const brasilia = createBrasiliaTrack();
+  const rio = createRioTrack();
+  assert.equal(brasilia.environmentId, "brasilia");
+  assert.equal(brasilia.length, rio.length);
+  assert.deepEqual(brasilia.segments, rio.segments);
 });
 
 test("a malha tem profundidades ordenadas e projeções finitas em toda a volta", () => {

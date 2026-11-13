@@ -1,6 +1,9 @@
 import { PLAYER_CARS, RACE_RULES, VIEW, clamp, mod } from "./config.js";
 import { segmentAt } from "./track.js";
 import { CAMERA, buildRoadFrame, projectEntity, roadHorizon, worldDistanceAt } from "./engines/rua-livre-adapter.js";
+import { environmentFor } from "./scenery/environments.js";
+import { sceneryForTrack } from "./scenery/generator.js";
+import { scenerySprite } from "./scenery/manifest.js";
 
 export function sceneryPositions(playerDistance, spacing = 28) {
   const first = Math.floor(playerDistance / spacing) + 1;
@@ -28,6 +31,7 @@ function spriteCell(sheet, index, grid = null, rows = 4) {
 }
 
 function loadImage(source) {
+  if (!source) return Promise.resolve(null);
   return new Promise((resolve) => {
     const image = new Image();
     image.onload = () => resolve(image);
@@ -36,16 +40,18 @@ function loadImage(source) {
   });
 }
 
-export async function loadGameAssets() {
-  const [background, npcCars, rivalIndicator, playerIndicator, ...playerSprites] = await Promise.all([
-    loadImage("assets/scenery/rio-night-panorama.png"),
+export async function loadGameAssets(environmentId = "rio") {
+  const environment = environmentFor(environmentId);
+  const [background, sceneryAtlas, npcCars, rivalIndicator, playerIndicator, ...playerSprites] = await Promise.all([
+    loadImage(environment.panorama),
+    loadImage(environment.atlas?.source),
     loadImage("assets/cars/player/npcs_carro.png"),
     loadImage("assets/ui/seta_inimigo.png"),
     loadImage("assets/ui/seta_jogador.png"),
     ...PLAYER_CARS.map((car) => loadImage(car.spriteAsset)),
   ]);
   const playerCars = Object.fromEntries(PLAYER_CARS.map((car, index) => [car.id, playerSprites[index]]));
-  return { background, playerCars, npcCars, rivalIndicator, playerIndicator };
+  return { background, sceneryAtlas, environmentId, playerCars, npcCars, rivalIndicator, playerIndicator };
 }
 
 export class RaceRenderer {
@@ -155,6 +161,44 @@ export class RaceRenderer {
   }
 
   drawScenery(race, road) {
+    const environment = environmentFor(race.track.environmentId);
+    if (!environment.enabled || !this.assets.sceneryAtlas) {
+      this.drawLegacyScenery(race, road);
+      return;
+    }
+    const objects = sceneryForTrack(race.track, environment);
+    const context = this.context;
+    const pixel = VIEW.height / VIEW.pixelHeight;
+
+    // A lista é estável e ordenada: percorrê-la ao contrário desenha do horizonte para a câmera.
+    for (let index = objects.length - 1; index >= 0; index -= 1) {
+      const object = objects[index];
+      const distance = object.distance - race.player.distance;
+      if (distance > RACE_RULES.visibleDistance) continue;
+      if (distance < 1.5) break;
+      const sprite = scenerySprite(object.type);
+      if (!sprite) continue;
+      const point = this.project(road, distance, object.lane);
+      const height = Math.max(pixel, Math.round(sprite.referenceHeight * object.scale * point.scale / pixel) * pixel);
+      const width = Math.max(pixel, Math.round(height * sprite.source.width / sprite.source.height / pixel) * pixel);
+      const x = Math.round((point.x - width * sprite.anchor.x) / pixel) * pixel;
+      const y = Math.round((point.y - height * sprite.anchor.y) / pixel) * pixel;
+      if (x > VIEW.width || x + width < 0 || y > point.clipY) continue;
+
+      context.save();
+      context.beginPath();
+      context.rect(0, 0, VIEW.width, Math.max(0, point.clipY));
+      context.clip();
+      context.drawImage(
+        this.assets.sceneryAtlas,
+        sprite.source.x, sprite.source.y, sprite.source.width, sprite.source.height,
+        x, y, width, height,
+      );
+      context.restore();
+    }
+  }
+
+  drawLegacyScenery(race, road) {
     for (const worldDistance of sceneryPositions(race.player.distance)) {
       const distance = worldDistance - race.player.distance;
       const segment = segmentAt(race.track, worldDistance);

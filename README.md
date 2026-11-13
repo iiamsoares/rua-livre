@@ -1,6 +1,6 @@
 # Rua Livre
 
-Vertical slice de um jogo de corrida arcade pseudo-3D inspirado nos clássicos de 16 bits e ambientado em uma metrópole costeira brasileira fictícia.
+Vertical slice de um jogo de corrida arcade pseudo-3D inspirado nos clássicos de 16 bits e ambientado em circuitos brasileiros.
 
 ## Executar
 
@@ -56,6 +56,17 @@ Os testes cobrem pista, física, largada, pausa, chegada, premiação e migraç�
 - Três rivais com aceleração de largada; aceleração e direção do jogador mais rápidas. Carros, garagem, colisões e saves preservados.
 - Trânsito civil com 12 veículos, separado dos três rivais, com velocidades entre 60 e 147 km/h. Os carros ultrapassados reaparecem além da câmera, com espaçamento de entrada na mesma faixa.
 - Trilha sintetizada original em quatro compassos, com baixo, melodia e pulso rítmico. O botão SOM controla música e efeitos; a pausa silencia ambos.
+
+## Cenários dinâmicos
+
+Brasília — Circuito do Cerrado usa objetos laterais presos a posições reais da pista. Árvores, ipês, vegetação, postes, placas, defensas e marcos arquitetônicos passam pela mesma projeção pseudo-3D dos carros e acompanham curvas e relevo. A distribuição é determinística: a mesma pista e semente sempre produzem o mesmo ambiente.
+
+- `js/scenery/manifest.js`: atlas centralizado, recortes verificados, âncoras e dimensões visuais.
+- `js/scenery/environments.js`: panorama, atlas, semente, densidades e qualidade de cada mapa.
+- `js/scenery/generator.js`: distribuição determinística e cache das instâncias por pista.
+- `js/renderer.js`: projeção, recorte de morros, descarte fora da tela e ordem de profundidade.
+
+Para adicionar outro mapa, registre o panorama e o atlas em `ENVIRONMENTS`, crie seu manifesto de sprites e forneça um `environmentId` na criação da pista. A lógica central do renderizador não precisa ser alterada. Mapas sem configuração dinâmica continuam aceitos pelo cadastro, mas Salvador e Manaus ainda dependem de seus próprios assets e regras de distribuição.
 
 ### Referências e materiais
 

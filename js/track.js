@@ -17,7 +17,7 @@ function easedCurve(target, index, length) {
   return target * Math.sin(edge * Math.PI / 2);
 }
 
-export function createRioTrack() {
+function createTrack({ id, name, environmentId }) {
   const segments = [];
   for (const section of SECTION_DEFINITIONS) {
     for (let index = 0; index < section.length; index += 1) {
@@ -30,14 +30,31 @@ export function createRioTrack() {
     }
   }
   const track = {
-    id: "rio-orla-noturna",
-    name: "Circuito Orla da Guanabara",
+    id,
+    name,
+    environmentId,
     segmentLength: SEGMENT_LENGTH,
     segments,
     length: segments.length * SEGMENT_LENGTH,
   };
   track.mapPoints = buildMapPoints(track);
   return track;
+}
+
+export function createRioTrack() {
+  return createTrack({
+    id: "rio-orla-noturna",
+    name: "Circuito Orla da Guanabara",
+    environmentId: "rio",
+  });
+}
+
+export function createBrasiliaTrack() {
+  return createTrack({
+    id: "brasilia-circuito-cerrado",
+    name: "Brasília — Circuito do Cerrado",
+    environmentId: "brasilia",
+  });
 }
 
 export function segmentAt(track, distance) {
