@@ -24,18 +24,17 @@
 
       <main>
         <section id="titleScreen" class="screen active title-screen" aria-labelledby="titleHeading">
-          <div class="title-shade"></div>
-          <div class="title-content">
-            <p class="eyebrow">UMA NOITE. TRÊS VOLTAS. QUATRO PILOTOS.</p>
-            <h1 id="titleHeading">A cidade nunca<br /><em>tira o pé.</em></h1>
-            <p class="lead">Corte a orla, encare o trânsito e conquiste o pódio em uma corrida arcade inspirada nos clássicos de 16 bits.</p>
-            <div class="actions">
-              <button id="playButton" class="primary">JOGAR <span>›</span></button>
-              <button id="howButton" class="secondary">COMO JOGAR</button>
-            </div>
-            <div class="title-meta"><span>3 VOLTAS</span><span>3 RIVAIS</span><span>RIO À MEIA-NOITE</span></div>
-          </div>
-          <div id="titleCarMount"><img class="title-car" src="assets/cars/player/up_frente.png" alt="UP TSI, o carro do jogador" /></div>
+          <h1 id="titleHeading" class="sr-only">Rua Livre</h1>
+          <nav class="title-actions" aria-label="Menu principal">
+            <button id="playButton" class="title-image-button title-play-button" type="button">
+              <img src="assets/tela_inicial/botao_jogar.png" alt="" aria-hidden="true" />
+              <span class="sr-only">Jogar</span>
+            </button>
+            <button id="garageButton" class="title-image-button title-garage-button" type="button">
+              <img src="assets/tela_inicial/botao_garagem.png" alt="" aria-hidden="true" />
+              <span class="sr-only">Garagem</span>
+            </button>
+          </nav>
         </section>
 
         <section id="modeScreen" class="screen arcade-menu" aria-label="Escolha do modo"></section>

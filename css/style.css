@@ -24,6 +24,7 @@ body {
 button { color: inherit; font: inherit; }
 button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
 .hidden { display: none !important; }
+.sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
 .screen { display: none; min-height: calc(100vh - 76px); }
 .screen.active { display: block; }
 
@@ -58,16 +59,19 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background: #080b17 url("../assets/scenery/rio-night-panorama.png") center/cover no-repeat;
+  background: #080b17 url("../assets/tela_inicial/background.png") center / cover no-repeat;
 }
-.title-screen::after { content: ""; position: absolute; inset: auto 0 0; height: 34%; z-index: -1; background: linear-gradient(0deg, #05060b 10%, transparent); }
-.title-shade { position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, #05060bf2 0%, #05060bbb 35%, transparent 67%), linear-gradient(0deg, #08101c77, transparent 50%); }
-.title-content { width: min(690px, 86vw); padding: clamp(70px, 10vh, 120px) 0 72px clamp(24px, 7vw, 110px); position: relative; z-index: 2; }
+body[data-screen="title"] .topbar { display: none; }
+body[data-screen="title"] .title-screen { min-height: 100vh; min-height: 100svh; }
+.title-actions { position: absolute; z-index: 2; left: 50%; bottom: clamp(24px, 5vh, 56px); display: flex; flex-direction: column; align-items: center; gap: clamp(7px, 1.2vh, 13px); transform: translateX(-50%); }
+.title-image-button { display: block; border: 0; padding: 0; background: transparent; cursor: pointer; transition: transform .14s ease, filter .14s ease; }
+.title-image-button img { display: block; width: 100%; height: auto; image-rendering: pixelated; pointer-events: none; }
+.title-play-button { width: min(86vw, 520px); }
+.title-garage-button { width: min(64vw, 363px); }
+.title-image-button:hover { filter: brightness(1.14) drop-shadow(0 0 14px #ffd83d66); transform: scale(1.035); }
+.title-image-button:active { transform: scale(.98); }
+.title-image-button:focus-visible { border-radius: 4px; outline-color: #fff; }
 .eyebrow { margin: 0 0 13px; color: var(--lime); font: 900 11px/1.3 "Segoe UI", sans-serif; letter-spacing: .22em; }
-.title-content h1 { margin: 0; max-width: 670px; font-size: clamp(54px, 7.5vw, 112px); font-weight: 1000; font-style: italic; line-height: .82; letter-spacing: -.065em; text-transform: uppercase; text-shadow: 0 8px 0 #090b14, 0 16px 35px #000; }
-.title-content h1 em { color: var(--yellow); font-style: inherit; }
-.lead { max-width: 570px; margin: 28px 0 0; color: #e4e6f2; font: 600 clamp(14px, 1.4vw, 18px)/1.6 "Segoe UI", sans-serif; text-shadow: 0 2px 8px #000; }
-.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 .primary, .secondary, .upgrade-button {
   min-height: 49px;
   border: 2px solid #ffffff28;
@@ -83,9 +87,6 @@ button:focus-visible { outline: 3px solid var(--cyan); outline-offset: 3px; }
 .primary span { margin-left: 18px; font-size: 25px; }
 .secondary { background: #0a0f1ecc; }
 .primary:hover, .secondary:hover, .upgrade-button:hover:not(:disabled) { filter: brightness(1.15); transform: skew(-4deg) translateY(-2px); }
-.title-meta { display: flex; gap: 9px; margin-top: 38px; }
-.title-meta span { border-left: 3px solid var(--orange); padding: 7px 12px; background: #050811aa; font-size: 10px; letter-spacing: .1em; }
-.title-car { position: absolute; z-index: 1; width: min(53vw, 770px); right: -6vw; bottom: -5vw; filter: drop-shadow(0 28px 20px #000c); pointer-events: none; }
 
 .garage-screen { padding: 38px clamp(20px, 5vw, 76px) 64px; background: radial-gradient(circle at 35% 48%, #69391642, transparent 32%), linear-gradient(135deg, #11101a, #070a11 55%, #101a2a); }
 .section-heading { max-width: 1400px; margin: 0 auto 26px; display: flex; align-items: end; justify-content: space-between; gap: 20px; }
@@ -227,8 +228,6 @@ kbd { display: inline-grid; min-width: 31px; height: 29px; margin-right: 4px; pl
 
 @media (max-width: 900px) {
   .profile > span:nth-child(2) { display: none; }
-  .title-content { padding-left: 34px; }
-  .title-car { opacity: .65; width: 70vw; }
   .garage-grid { grid-template-columns: 1fr; }
   .car-stage { min-height: 390px; }
   .tune-panel { border-left: 0; border-top: 1px solid #39415a; }
@@ -242,9 +241,9 @@ kbd { display: inline-grid; min-width: 31px; height: 29px; margin-right: 4px; pl
   .screen { min-height: calc(100vh - 64px); }
   .profile > span { min-width: 93px; }
   .profile .icon-button { display: none; }
-  .title-content { padding: 72px 22px; }
-  .title-car { width: 95vw; right: -30vw; opacity: .4; }
-  .title-meta { flex-wrap: wrap; }
+  .title-actions { bottom: max(20px, env(safe-area-inset-bottom)); }
+  .title-play-button { width: min(90vw, 420px); }
+  .title-garage-button { width: min(70vw, 300px); }
   .section-heading { align-items: flex-start; }
   .section-heading .secondary { min-height: 40px; padding-inline: 12px; }
   .car-stage { min-height: 300px; }

@@ -1,4 +1,4 @@
-import { PLAYER_CARS, RACE_RULES, formatMoney, formatTime } from "./config.js";
+import { RACE_RULES, formatMoney, formatTime } from "./config.js";
 import { GameAudio } from "./audio.js";
 import { InputController } from "./input.js";
 import { RaceRenderer, loadGameAssets } from "./renderer.js";
@@ -9,7 +9,6 @@ import { PixelSpeedometer } from "./speedometer.js";
 import { createVersus, updateVersus } from "./versus.js";
 import { GarageUI } from "./garage.js";
 import { canStart, selectedIds } from "./garage-model.js";
-import { carPreviewMarkup } from "./car-preview.js";
 
 const element = (selector) => document.querySelector(selector);
 const elements = (selector) => [...document.querySelectorAll(selector)];
@@ -64,8 +63,6 @@ function showScreen(name) {
 function ordinal(position) { return `${position}º`; }
 
 function updateProfile() {
-  const car = PLAYER_CARS.find((item) => item.id === save.carId) || PLAYER_CARS[0];
-  element("#titleCarMount").innerHTML = carPreviewMarkup(car, "title-car", `${car.name}, o carro do jogador`);
   element("#creditsLabel").textContent = formatMoney(save.credits);
   element("#bestLabel").textContent = save.bestPosition == null ? "—" : `${ordinal(save.bestPosition)} · ${formatTime(save.bestTime || 0)}`;
   element("#soundButton").textContent = save.audio ? "SOM ON" : "SOM OFF";
@@ -169,6 +166,7 @@ const input = new InputController(() => togglePause());
 
 elements("[data-screen]").forEach((button) => button.addEventListener("click", () => showScreen(button.dataset.screen)));
 element("#playButton").addEventListener("click", () => { audio.unlock(); showScreen("mode"); });
+element("#garageButton").addEventListener("click", () => { audio.unlock(); garage.act("solo"); });
 element("#pauseButton").addEventListener("click", () => togglePause(true));
 element("#resumeButton").addEventListener("click", () => togglePause(false));
 element("#restartButton").addEventListener("click", startRace);
@@ -184,7 +182,6 @@ element("#soundButton").addEventListener("click", () => {
 });
 
 const howDialog = element("#howDialog");
-element("#howButton").addEventListener("click", () => howDialog.showModal());
 element("#closeHowButton").addEventListener("click", () => howDialog.close());
 element("#resetSaveButton").addEventListener("click", () => {
   if (!confirm("Apagar créditos, preparação e recordes do Rua Livre?")) return;
