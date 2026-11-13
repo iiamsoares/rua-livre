@@ -1,4 +1,5 @@
-import { BRASILIA_ATLAS } from "./manifest.js";
+import { BRASILIA_ZONES } from "./brasilia-zones.js";
+import { SCENERY_ATLASES } from "./manifest.js";
 
 const placeholder = (id, panorama) => Object.freeze({ id, enabled: false, panorama, atlas: null });
 
@@ -14,14 +15,9 @@ export const ENVIRONMENTS = Object.freeze({
     enabled: true,
     seed: 0x61a51a,
     panorama: "assets/scenery/brasilia_cenario.png",
-    atlas: BRASILIA_ATLAS,
+    atlases: Object.freeze(Object.values(SCENERY_ATLASES)),
+    zones: BRASILIA_ZONES,
     quality: "high",
-    densities: Object.freeze({
-      trees: 0.82,
-      ground: 0.9,
-      signs: 0.34,
-      architecture: 0.08,
-    }),
   }),
   rio: placeholder("rio", "assets/scenery/rio-night-panorama.png"),
   salvador: placeholder("salvador", null),

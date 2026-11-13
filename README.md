@@ -61,12 +61,25 @@ Os testes cobrem pista, física, largada, pausa, chegada, premiação e migraç�
 
 Brasília — Circuito do Cerrado usa objetos laterais presos a posições reais da pista. Árvores, ipês, vegetação, postes, placas, defensas e marcos arquitetônicos passam pela mesma projeção pseudo-3D dos carros e acompanham curvas e relevo. A distribuição é determinística: a mesma pista e semente sempre produzem o mesmo ambiente.
 
+A volta é dividida em cinco zonas contínuas: Cerrado (0–18%), Avenida dos Ipês (18–40%), Eixo Monumental (40–65%), Orla do Paranoá (65–85%) e Reta da Capital (85–100%). Nos 20% finais de cada zona, pesos, densidade, espaçamento e afastamento lateral são interpolados com a próxima região. Todos os objetos são gerados antes da corrida, portanto não mudam enquanto estão visíveis e a sequência permanece igual no solo e no versus.
+
 - `js/scenery/manifest.js`: atlas centralizado, recortes verificados, âncoras e dimensões visuais.
+- `js/scenery/brasilia-zones.js`: limites, densidades, pesos, espaçamentos, marcos e efeitos das cinco zonas.
 - `js/scenery/environments.js`: panorama, atlas, semente, densidades e qualidade de cada mapa.
 - `js/scenery/generator.js`: distribuição determinística e cache das instâncias por pista.
 - `js/renderer.js`: projeção, recorte de morros, descarte fora da tela e ordem de profundidade.
 
 Para adicionar outro mapa, registre o panorama e o atlas em `ENVIRONMENTS`, crie seu manifesto de sprites e forneça um `environmentId` na criação da pista. A lógica central do renderizador não precisa ser alterada. Mapas sem configuração dinâmica continuam aceitos pelo cadastro, mas Salvador e Manaus ainda dependem de seus próprios assets e regras de distribuição.
+
+O modo de diagnóstico pode ser ativado acrescentando `?debugScenery=1` ao endereço do jogo. Ele exibe trecho atual, progresso da volta, objetos visíveis e FPS sem alterar a simulação.
+
+### Assets ambientais pendentes
+
+- Partículas próprias de pétalas amarelas e roxas; a intensidade já está declarada por zona, mas o efeito permanece desativado até existir um PNG adequado.
+- Poeira pixel art opcional para o Cerrado; a configuração de intensidade está preparada, sem adicionar partículas artificiais ao renderizador.
+- Salvador e Manaus ainda precisam de panorama, spritesheet e configuração de zonas próprios.
+
+O panorama atual de Brasília já contém o Lago Paranoá e marcos arquitetônicos. Por isso a Orla não repete esses elementos como sprites distantes; ela usa apenas guarda-corpos, placas, bancos e vegetação lateral.
 
 ### Referências e materiais
 

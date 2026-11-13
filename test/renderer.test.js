@@ -55,6 +55,27 @@ test("o mapa de Brasília preserva a geometria e seleciona o ambiente próprio",
   assert.deepEqual(brasilia.segments, rio.segments);
 });
 
+test("o renderizador usa os quatro atlas sem depender da velocidade do carro", () => {
+  const local = Object.create(RaceRenderer.prototype);
+  const atlases = { cerrado: {}, eixo: {}, lago: {}, reta: {} };
+  const used = new Set();
+  const destinations = [];
+  local.assets = { sceneryAtlases: atlases };
+  local.hasSceneryAtlases = true;
+  local.context = {
+    save() {}, restore() {}, beginPath() {}, rect() {}, clip() {},
+    drawImage: (atlas, ...values) => { used.add(atlas); destinations.push(values.slice(-4)); },
+  };
+  const track = createBrasiliaTrack();
+  for (const distance of [0, 300, 670, 1090, 1430]) {
+    const race = { track, totalDistance: track.length * 3, player: { distance, lateral: 0, speed: distance % 2 ? 0 : 260 } };
+    local.drawScenery(race, local.makeRoad(race));
+  }
+  assert.equal(used.size, 4);
+  assert.ok(destinations.length > 100);
+  assert.ok(destinations.flat().every(Number.isFinite));
+});
+
 test("a malha tem profundidades ordenadas e projeções finitas em toda a volta", () => {
   for (let distance = 0; distance < 1680; distance += 13.7) {
     const road = renderer.makeRoad(raceAt(distance));

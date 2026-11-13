@@ -4,6 +4,7 @@ import { CAMERA, buildRoadFrame, projectEntity, roadHorizon, worldDistanceAt } f
 import { environmentFor } from "./scenery/environments.js";
 import { sceneryForTrack } from "./scenery/generator.js";
 import { scenerySprite } from "./scenery/manifest.js";
+import { zoneAtProgress } from "./scenery/brasilia-zones.js";
 
 export function sceneryPositions(playerDistance, spacing = 28) {
   const first = Math.floor(playerDistance / spacing) + 1;
@@ -42,16 +43,18 @@ function loadImage(source) {
 
 export async function loadGameAssets(environmentId = "rio") {
   const environment = environmentFor(environmentId);
-  const [background, sceneryAtlas, npcCars, rivalIndicator, playerIndicator, ...playerSprites] = await Promise.all([
+  const atlasDefinitions = environment.atlases || (environment.atlas ? [environment.atlas] : []);
+  const [background, sceneryImages, npcCars, rivalIndicator, playerIndicator, ...playerSprites] = await Promise.all([
     loadImage(environment.panorama),
-    loadImage(environment.atlas?.source),
+    Promise.all(atlasDefinitions.map((atlas) => loadImage(atlas.source))),
     loadImage("assets/cars/player/npcs_carro.png"),
     loadImage("assets/ui/seta_inimigo.png"),
     loadImage("assets/ui/seta_jogador.png"),
     ...PLAYER_CARS.map((car) => loadImage(car.spriteAsset)),
   ]);
+  const sceneryAtlases = Object.fromEntries(atlasDefinitions.map((atlas, index) => [atlas.id, sceneryImages[index]]));
   const playerCars = Object.fromEntries(PLAYER_CARS.map((car, index) => [car.id, playerSprites[index]]));
-  return { background, sceneryAtlas, environmentId, playerCars, npcCars, rivalIndicator, playerIndicator };
+  return { background, sceneryAtlases, sceneryAtlas: sceneryImages[0] || null, environmentId, playerCars, npcCars, rivalIndicator, playerIndicator };
 }
 
 export class RaceRenderer {
@@ -64,8 +67,13 @@ export class RaceRenderer {
     this.mapCanvas = mapCanvas;
     this.mapContext = mapCanvas.getContext("2d");
     this.assets = assets;
+    this.hasSceneryAtlases = Object.values(assets.sceneryAtlases || {}).some(Boolean);
     this.playerCar = PLAYER_CARS[0];
     this.playerSprite = assets.playerCars[this.playerCar.id];
+    this.debugScenery = typeof location !== "undefined" && new URLSearchParams(location.search).get("debugScenery") === "1";
+    this.visibleScenery = 0;
+    this.debugFps = 0;
+    this.lastRenderTime = 0;
     this.context.imageSmoothingEnabled = false;
   }
 
@@ -162,13 +170,16 @@ export class RaceRenderer {
 
   drawScenery(race, road) {
     const environment = environmentFor(race.track.environmentId);
-    if (!environment.enabled || !this.assets.sceneryAtlas) {
+    if (!environment.enabled || !this.hasSceneryAtlases) {
       this.drawLegacyScenery(race, road);
-      return;
+      this.visibleScenery = 0;
+      return 0;
     }
-    const objects = sceneryForTrack(race.track, environment);
+    const laps = Math.max(1, Math.ceil((race.totalDistance || race.track.length * RACE_RULES.laps) / race.track.length));
+    const objects = sceneryForTrack(race.track, environment, environment.quality, laps);
     const context = this.context;
     const pixel = VIEW.height / VIEW.pixelHeight;
+    let visible = 0;
 
     // A lista é estável e ordenada: percorrê-la ao contrário desenha do horizonte para a câmera.
     for (let index = objects.length - 1; index >= 0; index -= 1) {
@@ -178,6 +189,8 @@ export class RaceRenderer {
       if (distance < 1.5) break;
       const sprite = scenerySprite(object.type);
       if (!sprite) continue;
+      const atlas = this.assets.sceneryAtlases[sprite.atlas];
+      if (!atlas) continue;
       const point = this.project(road, distance, object.lane);
       const height = Math.max(pixel, Math.round(sprite.referenceHeight * object.scale * point.scale / pixel) * pixel);
       const width = Math.max(pixel, Math.round(height * sprite.source.width / sprite.source.height / pixel) * pixel);
@@ -190,12 +203,15 @@ export class RaceRenderer {
       context.rect(0, 0, VIEW.width, Math.max(0, point.clipY));
       context.clip();
       context.drawImage(
-        this.assets.sceneryAtlas,
+        atlas,
         sprite.source.x, sprite.source.y, sprite.source.width, sprite.source.height,
         x, y, width, height,
       );
       context.restore();
+      visible += 1;
     }
+    this.visibleScenery = visible;
+    return visible;
   }
 
   drawLegacyScenery(race, road) {
@@ -407,6 +423,28 @@ export class RaceRenderer {
     }
   }
 
+  drawSceneryDebug(race) {
+    if (!this.debugScenery) return;
+    const environment = environmentFor(race.track.environmentId);
+    const progress = mod(race.player.distance, race.track.length) / race.track.length;
+    const zone = environment.zones?.length ? zoneAtProgress(progress, environment.zones) : null;
+    const context = this.context;
+    context.save();
+    context.fillStyle = "#080b16dc";
+    context.fillRect(5, 5, 154, 45);
+    context.strokeStyle = "#9cff31";
+    context.lineWidth = 1.5;
+    context.strokeRect(5, 5, 154, 45);
+    context.fillStyle = "#f7f4e8";
+    context.font = "7px monospace";
+    context.textBaseline = "top";
+    context.fillText(`TRECHO: ${zone?.name || "PADRÃO"}`, 10, 10);
+    context.fillText(`VOLTA: ${(progress * 100).toFixed(1)}%`, 10, 20);
+    context.fillText(`OBJETOS: ${this.visibleScenery}`, 10, 30);
+    context.fillText(`FPS: ${Math.round(this.debugFps)}`, 92, 30);
+    context.restore();
+  }
+
   drawMap(race) {
     const context = this.mapContext;
     const points = race.track.mapPoints;
@@ -421,6 +459,12 @@ export class RaceRenderer {
 
   render(race) {
     const context = this.context;
+    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    if (this.lastRenderTime > 0) {
+      const sample = 1000 / Math.max(1, now - this.lastRenderTime);
+      this.debugFps = this.debugFps ? this.debugFps * 0.9 + sample * 0.1 : sample;
+    }
+    this.lastRenderTime = now;
     context.save();
     if (race.impactTimer > 0) context.translate((Math.random() - 0.5) * 3, (Math.random() - 0.5) * 3);
     this.drawBackground(race);
@@ -432,6 +476,7 @@ export class RaceRenderer {
     this.drawPlayer(race);
     this.drawAtmosphere(race);
     context.restore();
+    this.drawSceneryDebug(race);
     this.drawMap(race);
   }
 }
