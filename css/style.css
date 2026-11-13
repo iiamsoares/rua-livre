@@ -160,6 +160,12 @@ body[data-screen="title"] .title-screen { min-height: 100vh; min-height: 100svh;
 .pause-button { position: absolute; right: 17px; top: 92px; width: 35px; height: 35px; border: 2px solid #5e688b; color: white; background: #080c18cc; cursor: pointer; }
 .controls-strip { width: min(1280px, 100%); margin: 10px auto 0; display: flex; justify-content: center; gap: 25px; color: #7f879f; font: 700 9px/1 "Segoe UI", sans-serif; letter-spacing: .09em; }
 
+body[data-screen="race"] { overflow: hidden; }
+body[data-screen="race"] .topbar, body[data-screen="race"] .controls-strip { display: none; }
+body[data-screen="race"] .race-screen { width: 100vw; height: 100vh; height: 100dvh; min-height: 0; padding: 0; background: #000; }
+body[data-screen="race"] .race-shell { width: 100%; height: 100%; max-width: none; margin: 0; border: 0; box-shadow: none; aspect-ratio: auto; }
+body[data-screen="race"] .race-shell:not(.split) .race-view > canvas:first-child { object-fit: cover; }
+
 .overlay { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: #02040bdc; backdrop-filter: blur(5px); }
 .dialog { width: min(420px, 88%); padding: 28px; border: 2px solid #4e5879; background: linear-gradient(150deg, #161d30, #080b13); text-align: center; box-shadow: 14px 14px 0 #0007; }
 .dialog h2 { margin: 6px 0 24px; font-size: 37px; font-style: italic; text-transform: uppercase; }

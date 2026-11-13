@@ -9,6 +9,7 @@ import { PixelSpeedometer } from "./speedometer.js";
 import { createVersus, updateVersus } from "./versus.js";
 import { GarageUI } from "./garage.js";
 import { canStart, selectedIds } from "./garage-model.js";
+import { enterFullscreen, exitFullscreen } from "./fullscreen.js";
 
 const element = (selector) => document.querySelector(selector);
 const elements = (selector) => [...document.querySelectorAll(selector)];
@@ -48,6 +49,7 @@ const speedometerTwo = new PixelSpeedometer(element("#speedGaugeTwo"), assets.sp
 renderer.setPlayerCar(save.carId);
 
 function showScreen(name) {
+  if (name !== "race") void exitFullscreen();
   activeScreen = name;
   Object.entries(screens).forEach(([key, screen]) => screen.classList.toggle("active", key === name));
   document.body.dataset.screen = name;
@@ -78,6 +80,7 @@ function showMessage(text, duration = 680) {
 
 function startRace() {
   if (!canStart(save, garage.state.mode)) { showScreen("garage"); return; }
+  void enterFullscreen();
   const localMode = garage.state.mode === "versus";
   audio.unlock();
   input.clear();
